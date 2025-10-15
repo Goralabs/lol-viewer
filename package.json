@@ -1,9 +1,9 @@
 {
-  "name": "lol-live-eports-api",
-  "version": "0.1.0",
+  "name": "lol-live-eports",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
-  "homepage": "http://aureom.github.io/live-lol-esports",
+  "homepage": "https://live-lol-esports.goralabs.dev",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
