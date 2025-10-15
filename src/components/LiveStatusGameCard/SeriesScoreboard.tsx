@@ -87,11 +87,8 @@ export function SeriesScoreboard({
                                 const metadataIndex = teams.findIndex(t => t.id === metadataTeamId);
                                 if (metadataIndex !== -1) {
                                     winningTeamIndex = metadataIndex;
-                                } else {
                                 }
-                            } else {
                             }
-                        } else {
                         }
                     }
                 }
@@ -137,11 +134,11 @@ export function SeriesScoreboard({
             React.createElement('div', { className: "series-score" },
                 React.createElement('div', { className: "score-display" },
                     React.createElement('span', {
-                        className: `team-score ${seriesInfo.seriesWinner?.id === teams[0]?.id ? 'winner' : ''}`
+                        className: `team-score ${seriesInfo.isSeriesComplete && seriesInfo.seriesWinner?.id === teams[0]?.id ? 'winner' : ''}`
                     }, seriesInfo.teamWins[teams[0]?.id] || 0),
                     React.createElement('span', { className: "score-separator" }, "–"),
                     React.createElement('span', {
-                        className: `team-score ${seriesInfo.seriesWinner?.id === teams[1]?.id ? 'winner' : ''}`
+                        className: `team-score ${seriesInfo.isSeriesComplete && seriesInfo.seriesWinner?.id === teams[1]?.id ? 'winner' : ''}`
                     }, seriesInfo.teamWins[teams[1]?.id] || 0)
                 ),
                 React.createElement('div', { className: "series-format" }, `Best of ${seriesInfo.bestOfCount}`),
@@ -179,7 +176,10 @@ export function SeriesScoreboard({
                     : '';
                 const statusText = pill.isLive ? ' - LIVE' : pill.isCompleted ? ' - Completed' : '';
                 
+                // For ongoing games, use neutral color regardless of winner status
+                // Only apply team colors for completed games with a winner
                 const winnerClass =
+                    pill.isLive ? "no-winner" :
                     pill.winningTeamIndex === 0 ? "team-left-win" :
                     pill.winningTeamIndex === 1 ? "team-right-win" :
                     "no-winner";

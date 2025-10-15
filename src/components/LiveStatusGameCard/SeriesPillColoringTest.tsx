@@ -244,7 +244,7 @@ export function SeriesPillColoringTest() {
         ]
     });
 
-    const handleGameSelect = (gameNumber: number) => {
+    const handleGameSelect = () => {
     };
 
     return (
@@ -268,6 +268,7 @@ export function SeriesPillColoringTest() {
                     <li>Game 3 should have class "team-right-win" (T1 won, right team)</li>
                     <li>Game 4 should have class "team-right-win" (T1 won, right team)</li>
                 </ul>
+                <p style={{ marginTop: "1rem" }}>Note: Ongoing games should always have class "no-winner" regardless of winner status</p>
             </div>
         </div>
     );
