@@ -21,10 +21,22 @@
     height: 2.5rem;
     width: 2.5rem;
     margin: 0 1rem;
+    fill: var(--logo-color);
 }
 
-.footer-img > path {
-    fill: var(--logo-color);
+.footer-img path,
+.footer-img rect,
+.footer-img circle,
+.footer-img polygon,
+.footer-img line,
+.footer-img polyline {
+    fill: inherit;
+    stroke: inherit;
+}
+
+.footer-img--goralabs {
+    height: 3rem;
+    width: 3rem;
 }
 
 .footer-icon {

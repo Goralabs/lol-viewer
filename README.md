@@ -51,7 +51,7 @@ Dev tooling highlights: `vite` ^7, `@vitejs/plugin-react`, `eslint` ^9 with Reac
 ### Installation
 1. Clone your fork of this repository:
    ```bash
-   git clone https://github.com/<your-github-username>/live-lol-esports.git
+   git clone https://github.com/goralabs/live-lol-esports.git
    cd live-lol-esports
    ```
    > Want the upstream project instead? Grab it from [aureom/live-lol-esports](https://github.com/aureom/live-lol-esports).
