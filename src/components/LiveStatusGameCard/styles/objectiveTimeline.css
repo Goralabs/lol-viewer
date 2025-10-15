@@ -1,0 +1,211 @@
+.objective-timeline-container {
+    background: var(--card-color);
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+}
+
+.timeline-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.timeline-empty {
+    text-align: center;
+    color: var(--text);
+    opacity: 0.6;
+    padding: 2rem 0;
+}
+
+.timeline-events {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.timeline-event {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.timeline-event:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.timeline-event.blue {
+    border-left: 3px solid var(--blue-twitter);
+}
+
+.timeline-event.red {
+    border-left: 3px solid var(--red);
+}
+
+.timeline-event.neutral {
+    border-left: 3px solid #FFD700;
+}
+
+.timeline-event.firstBlood {
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.timeline-event.firstTower {
+    background-color: rgba(100, 149, 237, 0.1);
+}
+
+.timeline-event.firstDragon {
+    background-color: rgba(255, 140, 0, 0.1);
+}
+
+.timeline-event.baron {
+    background-color: rgba(138, 43, 226, 0.1);
+}
+
+.timeline-event.inhibitor {
+    background-color: rgba(255, 69, 0, 0.1);
+}
+
+.timeline-event.teamfight {
+    background-color: rgba(255, 215, 0, 0.08);
+}
+
+.event-time {
+    font-size: 0.875rem;
+    color: var(--text);
+    opacity: 0.7;
+    min-width: 50px;
+    font-weight: 500;
+}
+
+.event-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: 0 0.75rem;
+}
+
+.event-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.timeline-event.blue .event-icon {
+    fill: var(--blue-twitter);
+}
+
+.timeline-event.red .event-icon {
+    fill: var(--red);
+}
+
+.timeline-event.neutral .event-icon,
+.timeline-event.teamfight .event-icon {
+    fill: #FFD700;
+}
+
+.timeline-event.firstBlood .event-icon {
+    fill: #FFD700;
+}
+
+.timeline-event.baron .event-icon {
+    fill: #8A2BE2;
+}
+
+.timeline-event.inhibitor .event-icon {
+    fill: #FF4500;
+}
+
+.event-description {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text);
+}
+
+.event-selected-indicator {
+    position: absolute;
+    right: 0.75rem;
+    color: #FFD700;
+    font-size: 1rem;
+}
+
+/* Scrollbar styling */
+.timeline-events::-webkit-scrollbar {
+    width: 6px;
+}
+
+.timeline-events::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.timeline-events::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.timeline-events::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .objective-timeline-container {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+    
+    .timeline-header {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .timeline-event {
+        padding: 0.5rem;
+        margin-bottom: 0.375rem;
+    }
+    
+    .event-time {
+        font-size: 0.75rem;
+        min-width: 45px;
+    }
+    
+    .event-icon-container {
+        width: 20px;
+        height: 20px;
+        margin: 0 0.5rem;
+    }
+    
+    .event-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .event-description {
+        font-size: 0.75rem;
+    }
+    
+    .timeline-events {
+        max-height: 300px;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .objective-timeline-container {
+        padding: 1rem;
+    }
+    
+    .timeline-events {
+        max-height: 350px;
+    }
+}

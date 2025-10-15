@@ -1,0 +1,234 @@
+/* Mobile Simple Player Table Styles */
+
+/* Container for the simple player table */
+.simple-player-table-container {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Simple player table layout */
+.simple-player-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Simple player row */
+.simple-player-row {
+  border-bottom: 1px solid var(--gray-line);
+  padding: 0.75rem 0;
+}
+
+.simple-player-row:last-child {
+  border-bottom: none;
+}
+
+/* Player info section with champion and name */
+.simple-player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.simple-player-champion {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-line);
+  position: relative;
+}
+
+.simple-player-level {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  background: var(--card-color);
+  border: 1px solid var(--gray-line);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--card-color);
+}
+
+.simple-player-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.simple-player-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.simple-player-champion-name {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+/* Player stats section */
+.simple-player-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.simple-player-hp {
+  flex: 2;
+  min-width: 0;
+}
+
+.simple-player-kda {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.simple-player-gold {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Health bar for simple layout */
+.simple-health-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--gray-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.simple-health-bar-fill {
+  height: 100%;
+  background: var(--green);
+  transition: width 1s;
+}
+
+/* Team headers for simple layout */
+.simple-team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 2px solid var(--gray-line);
+  margin-bottom: 0.5rem;
+}
+
+.simple-team-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.simple-team-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.simple-team-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Toggle button for mobile */
+.simple-table-toggle {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+}
+
+.toggle-button {
+  background: var(--card-color);
+  border: 1px solid var(--gray-line);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button:hover {
+  background: var(--gray-line);
+}
+
+.toggle-button.active {
+  background: var(--blue-twitter);
+  color: white;
+  border-color: var(--blue-twitter);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .simple-player-info {
+    gap: 0.5rem;
+  }
+  
+  .simple-player-champion {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .simple-player-name {
+    font-size: 13px;
+  }
+  
+  .simple-player-champion-name {
+    font-size: 11px;
+  }
+  
+  .simple-player-stats {
+    gap: 0.25rem;
+  }
+  
+  .simple-player-kda,
+  .simple-player-gold {
+    font-size: 13px;
+  }
+}
+
+/* Animation for switching between simple and detailed */
+.simple-to-detailed-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.simple-to-detailed-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.simple-to-detailed-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.simple-to-detailed-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 300ms, transform 300ms;
+}

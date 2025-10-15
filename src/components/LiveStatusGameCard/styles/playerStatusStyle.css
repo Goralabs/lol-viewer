@@ -1,0 +1,537 @@
+.mini-health-bar {
+    display: flex;
+    align-items: center;
+}
+
+.mini-health-bar > div {
+    flex: 1;
+    border-radius: 4px;
+    min-width: 5rem;
+    background: var(--gray-line);
+    position: relative;
+}
+
+.mini-health-bar > div > div {
+    height: 28px;
+    border-radius: 4px;
+    transition: width 1s;
+    background: var(--green);
+}
+
+span.mini-current-health {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/*
+ HEADER IMAGES
+*/
+
+.live-game-stats-header-team-images {
+    display: flex;
+    align-items: center;
+}
+
+.live-game-stats-header-team-images > .live-game-stats-header-status-text {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.live-game-stats-header-status-text > h1,
+.live-game-stats-header-status-text > h3 {
+    margin: 0;
+}
+
+.live-game-stats-header-status-text > h3 {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.live-game-stats-header-team-images > h3 {
+    flex: 1;
+    text-align: center;
+}
+
+.live-game-stats-header-team-images > .blue-team {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+
+    width: 4rem;
+    height: 4rem;
+
+    border-radius: 5px;
+    padding: 0.30rem;
+
+    filter: drop-shadow(0px 0px 0px #222);
+
+}
+
+.live-game-stats-header-team-images > .red-team {
+    display: flex;
+    flex: 1;
+    flex-direction: row-reverse;
+    justify-content: center;
+    text-align: right;
+
+    width: 4rem;
+    height: 4rem;
+
+    border-radius: 5px;
+    padding: 0.30rem;
+    filter: drop-shadow(0px 0px 0px #222);
+}
+
+/*
+ HEADER STATUS
+*/
+
+.live-game-stats-header-status {
+    margin-top: 1.5rem;
+    display: flex;
+}
+
+.live-game-stats-header-status > .blue-team > .team-stats > svg > path {
+    fill: var(--blue-twitter);
+}
+
+.live-game-stats-header-status > .blue-team > .team-stats > svg > g {
+    fill: var(--blue-twitter);
+}
+
+.live-game-stats-header-status > .red-team > .team-stats > svg > path {
+    fill: var(--red);
+}
+
+.live-game-stats-header-status > .red-team > .team-stats > svg > g {
+    fill: var(--red);
+}
+
+.live-game-stats-header-status > .blue-team {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    margin-right: 15rem;
+}
+
+@media(max-width: 1080px) {
+    .live-game-stats-header-status > .blue-team {
+        margin-right: 10rem;
+    }
+}
+
+@media(max-width: 720px) {
+    .live-game-stats-header-status > .blue-team {
+        margin-right: 1rem;
+    }
+}
+
+.live-game-stats-header-status > .red-team {
+    display: flex;
+    flex: 1;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    text-align: right;
+}
+
+.team-stats {
+    color: var(--text);
+    display: inline-block;
+    text-align: center;
+    width: 24px;
+}
+
+.team-stats > span {
+    display: flex;
+    justify-content: center;
+}
+
+/*
+Gold bar
+*/
+
+.live-game-stats-header-gold {
+    margin: 1rem 0;
+    display: flex;
+}
+
+.live-game-stats-header-gold > .blue-team {
+    border-bottom: 4px solid var(--blue-twitter);
+}
+
+.live-game-stats-header-gold > .red-team {
+    border-bottom: 4px solid var(--red);
+}
+
+.win-probability-text {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    margin-top: 0.5rem;
+}
+
+.win-probability-text-blue {
+    color: var(--blue-twitter);
+}
+
+.win-probability-text-red {
+    color: var(--red);
+}
+
+.win-probability-text-label {
+    opacity: 0.65;
+}
+
+/*
+Status dragons
+*/
+.live-game-stats-header-dragons{
+    display: flex;
+    min-height: 24px;
+}
+
+.live-game-stats-header-dragons > .blue-team {
+    flex: 1;
+}
+
+.live-game-stats-header-dragons > .red-team {
+    text-align: right;
+    flex: 1;
+}
+
+.blue-team > .dragon {
+    margin-right: 0.75rem;
+}
+
+.red-team > .dragon {
+    margin-left: 0.75rem;
+}
+
+/*
+ PLAYER
+*/
+
+.status-live-game-card {
+    background: var(--card-color);
+    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+}
+
+.status-live-game-card-content {
+    margin: 1.5rem 1.5rem;
+    overflow-x: auto;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 767px) {
+    .status-live-game-card-content {
+        margin: 1rem 0.75rem;
+        overflow-x: hidden;
+    }
+    
+    .live-game-stats-header-team-images {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .live-game-stats-header-team-images > h3 {
+        font-size: 0.875rem;
+    }
+    
+    .live-game-stats-header-status > .blue-team {
+        margin-right: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .live-game-stats-header-status > .red-team {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .team-stats {
+        width: 20px;
+        font-size: 0.75rem;
+    }
+    
+    .win-probability-text {
+        font-size: 0.625rem;
+        gap: 0.5rem;
+    }
+    
+    .live-game-stats-header-gold {
+        margin: 0.5rem 0;
+    }
+    
+    .live-game-stats-header-dragons {
+        min-height: 20px;
+    }
+    
+    .blue-team > .dragon,
+    .red-team > .dragon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .blue-team > .dragon {
+        margin-right: 0.5rem;
+    }
+    
+    .red-team > .dragon {
+        margin-left: 0.5rem;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .status-live-game-card-content {
+        margin: 1.25rem 1.25rem;
+    }
+    
+    .live-game-stats-header-status > .blue-team {
+        margin-right: 5rem;
+    }
+}
+
+.status-live-game-card-table {
+    width: 100%;
+}
+
+.player-champion-info {
+    text-align: left;
+    display: flex;
+    align-items: center;
+}
+
+.player-champion-info-level{
+    position: absolute;
+    transform: translate(-50%, 100%);
+    font-size: 12px;
+}
+
+.player-champion-info-name {
+    margin-left: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-card-player-name {
+    font-size: 10px;
+}
+
+.player-champion {
+    width: 32px;
+    border-radius: 50%;
+    background: var(--gray-line);
+}
+
+.player-stats{
+    color: var(--text)
+}
+
+.table-top-row-champion{
+    width: 12rem;
+}
+
+.table-top-row-vida{
+    height: 28px;
+    width: 15rem;
+}
+
+.table-top-row-items {
+    height: 28px;
+    width: 12rem;
+}
+
+.table-top-row {
+    height: 28px;
+}
+
+.player-stats {
+    /*width: 64px;*/
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+    font-weight: 400;
+    background: var(--gray-line);
+    text-align: center;
+    border-radius: 3px;
+}
+
+.player-stats-kda {
+    width: 28px;
+}
+
+/*
+
+ */
+
+.player-stats-items {
+    height: 28px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: var(--gray-line);
+    border-radius: 4px;
+}
+
+.player-stats-item {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-stats-item  > img {
+    height: 26px;
+    border-radius: 4px;
+}
+
+/*
+
+ */
+
+.player-gold-positive {
+    color: var(--green-positive);
+    font-weight: 500;
+}
+
+.player-gold-negative {
+    color: var(--red);
+    font-weight: 500;
+}
+
+.loading-game-container {
+    display: flex;
+    width: 100%;
+    height: 60vh;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-game-image{
+    width: 20%;
+}
+
+/*
+    Game selector (series)
+*/
+.game-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+}
+
+.game-selector-button {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--gray-line);
+    background: var(--card-color);
+    color: var(--text);
+}
+
+.game-selector-button:hover {
+    filter: brightness(1.1);
+}
+
+.game-selector-button.selected {
+    background: var(--blue-twitter);
+    color: #fff;
+    border-color: var(--blue-twitter);
+}
+
+/*
+    Toast LiveAPIWatcher
+*/
+
+.toast-watcher {
+    display: flex;
+    align-items: center;
+}
+
+.toast-image {
+    display: flex;
+
+    width: 2rem;
+    height: 2rem;
+
+    margin-right: 1rem;
+}
+
+/*
+    Player Detail Drawer Styles
+*/
+.player-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.player-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.player-row:focus {
+    outline: 2px solid var(--blue-twitter);
+    outline-offset: -2px;
+}
+
+.player-row.expanded {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.drawer-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.player-row:hover .drawer-trigger {
+    opacity: 1;
+}
+
+.player-row.expanded .drawer-trigger-icon {
+    transform: rotate(180deg);
+}
+
+.drawer-trigger-icon {
+    font-size: 12px;
+    color: var(--text);
+    transition: transform 0.2s;
+}
+
+/* Position the drawer relative to the table */
+.status-live-game-card-table {
+    position: relative;
+}
+
+/* Tablet-specific adjustments for drawer trigger */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .drawer-trigger {
+        margin-left: 4px;
+    }
+    
+    .drawer-trigger-icon {
+        font-size: 10px;
+    }
+}

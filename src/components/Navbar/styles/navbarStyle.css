@@ -1,0 +1,141 @@
+.navbar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 5rem;
+
+    background-color: var(--card-color);
+    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.navbar-logo-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0rem;
+}
+
+.navbar-icon-img {
+    width: 2.5rem;
+    transform: translate(0%,22%);
+}
+
+.navbar-icon-img > path {
+    fill: var(--logo-color);
+}
+
+.navbar-icon {
+    color: var(--title);
+    font: 500 1.25rem 'Inter', sans-serif;
+    margin: 0;
+}
+
+/*
+theme and sound toggle
+ */
+
+.settings-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-left: auto;
+    margin-right: clamp(2rem, 6vw, 5rem);
+}
+
+.sound-toggle {
+    cursor: pointer;
+    height: 1.5rem;
+    width: 2.5rem;
+    border-radius: 50px;
+    border: 3px solid var(--gray-line);
+    background-color: var(--theme-switch-bg);
+}
+
+.theme-toggle {
+    cursor: pointer;
+    height: 1.5rem;
+    width: 2.5rem;
+    border-radius: 50px;
+    border: 3px solid var(--gray-line);
+    background-color: var(--theme-switch-bg);
+}
+
+.notch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 1.75rem;
+    width: 1.75rem;
+    border-radius: 50%;
+    background-color: var(--theme-switch-notch);
+    transform: translate(-50%, -20%);
+    transition: all 0.5s;
+}
+
+.dark > .notch {
+    transform: translate(50%, -20%);
+}
+
+.muted > .notch {
+    transform: translate(50%, -20%);
+}
+
+.backfill-toggle {
+    cursor: pointer;
+    height: 1.5rem;
+    width: 2.5rem;
+    border-radius: 50px;
+    border: 3px solid var(--gray-line);
+    background-color: var(--theme-switch-bg);
+}
+
+.backfill-toggle.disabled > .notch {
+    transform: translate(50%, -20%);
+}
+
+.toggle-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-color);
+    color: var(--text);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 1000;
+    border: 1px solid var(--gray-line);
+    margin-top: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-container {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.toggle-container:hover .toggle-tooltip {
+    opacity: 1;
+}

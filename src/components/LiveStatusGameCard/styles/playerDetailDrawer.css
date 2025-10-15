@@ -1,0 +1,229 @@
+.player-detail-drawer {
+  position: fixed;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-color);
+  border: 1px solid var(--gray-line);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+  z-index: 100;
+  max-width: 600px;
+  width: calc(100% - 32px);
+  margin: 0;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+.player-detail-drawer.blue {
+  border-top: 3px solid var(--blue-twitter);
+}
+
+.player-detail-drawer.red {
+  border-top: 3px solid var(--red);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-line);
+  background: var(--background-color);
+  border-radius: 8px 8px 0 0;
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: var(--gray-line);
+}
+
+.drawer-content {
+  padding: 16px;
+  max-height: calc(80vh - 56px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.stats-section, .runes-section, .abilities-section {
+  margin-bottom: 20px;
+}
+
+.stats-section:last-child,
+.runes-section:last-child,
+.abilities-section:last-child {
+  margin-bottom: 0;
+}
+
+.stats-section h4,
+.runes-section h4,
+.abilities-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: var(--background-color);
+  border-radius: 6px;
+  border: 1px solid var(--gray-line);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text);
+  opacity: 0.7;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.runes-container {
+  display: flex;
+  gap: 16px;
+}
+
+.rune-path {
+  flex: 1;
+}
+
+.rune-path-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rune-path-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.rune-path-header span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rune-slots {
+  display: flex;
+  gap: 4px;
+}
+
+.rune-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: 1px solid var(--gray-line);
+}
+
+.abilities-sequence {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(32px, 1fr));
+  gap: 6px;
+}
+
+.ability-square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--background-color);
+  border: 1px solid var(--gray-line);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.ability-square.empty {
+  opacity: 0.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1023px) {
+  .player-detail-drawer {
+    top: 80px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+  
+  .runes-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .abilities-sequence {
+    grid-template-columns: repeat(6, minmax(28px, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .player-detail-drawer {
+    /* Hidden on mobile as per requirements */
+    display: none;
+  }
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .drawer-content {
+    padding: 12px;
+  }
+  
+  .stats-section, .runes-section, .abilities-section {
+    margin-bottom: 16px;
+  }
+}

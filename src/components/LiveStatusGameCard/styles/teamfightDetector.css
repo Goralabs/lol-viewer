@@ -1,0 +1,194 @@
+.teamfight-detector-container {
+    background: var(--card-color);
+    border-radius: 4px;
+    padding: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+}
+
+.teamfight-detector-header {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.teamfight-detector-empty {
+    text-align: center;
+    color: var(--text);
+    opacity: 0.6;
+    padding: 2rem 0;
+}
+
+.teamfight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.teamfight-event {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+    border-left: 3px solid transparent;
+}
+
+.teamfight-event:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.teamfight-event.blue {
+    border-left-color: var(--blue-twitter);
+    background-color: rgba(29, 161, 242, 0.05);
+}
+
+.teamfight-event.red {
+    border-left-color: var(--red);
+    background-color: rgba(224, 36, 94, 0.05);
+}
+
+.teamfight-event.neutral {
+    border-left-color: #FFD700;
+    background-color: rgba(255, 215, 0, 0.05);
+}
+
+.teamfight-event.selected {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-width: 4px;
+}
+
+.teamfight-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.kill-icon {
+    width: 20px;
+    height: 20px;
+    fill: #FFD700;
+}
+
+.teamfight-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.teamfight-description {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.teamfight-details {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text);
+    opacity: 0.7;
+}
+
+.teamfight-time {
+    font-weight: 500;
+    color: var(--blue-twitter);
+}
+
+.teamfight-stats {
+    flex: 1;
+}
+
+.teamfight-selected-indicator {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #FFD700;
+    font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .teamfight-detector-container {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+    
+    .teamfight-detector-header {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .teamfight-event {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .teamfight-icon {
+        width: 32px;
+        height: 32px;
+        margin-right: 0.75rem;
+    }
+    
+    .kill-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .teamfight-description {
+        font-size: 0.75rem;
+    }
+    
+    .teamfight-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        font-size: 0.625rem;
+    }
+    
+    .teamfight-selected-indicator {
+        right: 0.75rem;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .teamfight-detector-container {
+        padding: 1rem;
+    }
+    
+    .teamfight-event {
+        padding: 0.875rem;
+    }
+    
+    .teamfight-icon {
+        width: 36px;
+        height: 36px;
+        margin-right: 0.875rem;
+    }
+    
+    .kill-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .teamfight-description {
+        font-size: 0.8125rem;
+    }
+    
+    .teamfight-details {
+        font-size: 0.6875rem;
+    }
+}
