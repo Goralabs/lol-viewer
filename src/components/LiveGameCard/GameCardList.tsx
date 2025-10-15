@@ -10,10 +10,11 @@ import { useEffect } from "react";
 
 type Props = {
     liveGames: LiveEvent[];
-    todayGames: TodayEvent[];
+    upcomingGames: TodayEvent[];
+    pastGames: TodayEvent[];
 }
 
-export function GameCardList({ liveGames, todayGames }: Props) {
+export function GameCardList({ liveGames, upcomingGames, pastGames }: Props) {
     useEffect(() => {
         document.title = "LoL Live Esports";
     }, []);
@@ -25,7 +26,9 @@ export function GameCardList({ liveGames, todayGames }: Props) {
                 <>
                     <LiveGames liveGames={liveGames} />
                     <div className="games-separator" />
-                    <TodayGames todayGames={todayGames} />
+                    <UpcomingGames upcomingGames={upcomingGames} />
+                    <div className="games-separator" />
+                    <PastGames pastGames={pastGames} />
                 </>
             ) : (
                 <>
@@ -34,7 +37,9 @@ export function GameCardList({ liveGames, todayGames }: Props) {
                         <h3 className="empty-games-inline-text">NO LIVE GAMES</h3>
                     </div>
                     <div className="games-separator" />
-                    <TodayGames todayGames={todayGames} />
+                    <UpcomingGames upcomingGames={upcomingGames} />
+                    <div className="games-separator" />
+                    <PastGames pastGames={pastGames} />
                 </>
             )}
         </div>
@@ -69,21 +74,18 @@ function LiveGames({liveGames}: PropsLive) {
     }
 }
 
-type PropsToday = {
-    todayGames: TodayEvent[];
+type PropsUpcoming = {
+    upcomingGames: TodayEvent[];
 }
 
-function TodayGames({todayGames}: PropsToday) {
-    if (todayGames !== undefined && todayGames.length !== 0) {
-
-        let date = new Date();
-
+function UpcomingGames({upcomingGames}: PropsUpcoming) {
+    if (upcomingGames !== undefined && upcomingGames.length !== 0) {
         return (
             <div>
-                <h2 className="games-of-day">TODAY'S GAMES</h2>
+                <h2 className="games-of-day">UPCOMING GAMES</h2>
                 <div className="games-list-container">
                     <div className="games-list-items">
-                        {todayGames.map(game => (
+                        {upcomingGames.map(game => (
                             <ScheduleGameCard
                                 key={game.match.id}
                                 game={game}
@@ -93,7 +95,35 @@ function TodayGames({todayGames}: PropsToday) {
                 </div>
             </div>
         );
-    }else{
+    } else {
+        return (
+            <div/>
+        );
+    }
+}
+
+type PropsPast = {
+    pastGames: TodayEvent[];
+}
+
+function PastGames({pastGames}: PropsPast) {
+    if (pastGames !== undefined && pastGames.length !== 0) {
+        return (
+            <div>
+                <h2 className="games-of-day">PAST GAMES</h2>
+                <div className="games-list-container">
+                    <div className="games-list-items">
+                        {pastGames.map(game => (
+                            <ScheduleGameCard
+                                key={game.match.id}
+                                game={game}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    } else {
         return (
             <div/>
         );

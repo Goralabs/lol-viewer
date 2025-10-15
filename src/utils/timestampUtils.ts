@@ -106,3 +106,70 @@ export function isTerminalGameState(gameState: string): boolean {
   
   return terminalStates.includes(gameState.toLowerCase());
 }
+
+/**
+ * Gets the current UTC timestamp normalized to avoid drift
+ * @returns Current UTC timestamp in milliseconds
+ */
+export function getCurrentUTCTime(): number {
+  return Date.now();
+}
+
+/**
+ * Filters games into upcoming and past categories based on a 24-hour window
+ * @param games Array of games with startTime property
+ * @param now Reference timestamp (defaults to current UTC time)
+ * @returns Object with upcoming and past game arrays
+ */
+export function filterGamesByTimeWindow<T extends { startTime: Date | string }>(
+  games: T[],
+  now: number = getCurrentUTCTime()
+): { upcoming: T[], past: T[] } {
+  const upcoming: T[] = [];
+  const past: T[] = [];
+  
+  const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+  const nowMinus24h = now - twentyFourHoursInMs;
+  const nowPlus24h = now + twentyFourHoursInMs;
+  
+  for (const game of games) {
+    const gameTime = toEpochMillis(game.startTime);
+    
+    // Upcoming: startTime >= now and < now + 24h
+    if (gameTime >= now && gameTime < nowPlus24h) {
+      upcoming.push(game);
+    }
+    // Past: startTime >= now - 24h and < now
+    else if (gameTime >= nowMinus24h && gameTime < now) {
+      past.push(game);
+    }
+  }
+  
+  // Sort upcoming ascending by start time
+  upcoming.sort((a, b) => toEpochMillis(a.startTime) - toEpochMillis(b.startTime));
+  
+  // Sort past descending by start time
+  past.sort((a, b) => toEpochMillis(b.startTime) - toEpochMillis(a.startTime));
+  
+  return { upcoming, past };
+}
+
+/**
+ * Checks if a game is currently in progress based on its state and start time
+ * @param game Game object with startTime and state properties
+ * @param now Reference timestamp (defaults to current UTC time)
+ * @returns true if the game is in progress
+ */
+export function isGameInProgress<T extends { startTime: Date | string; state?: string }>(
+  game: T,
+  now: number = getCurrentUTCTime()
+): boolean {
+  const gameTime = toEpochMillis(game.startTime);
+  
+  // Game is in progress if it has started but not completed
+  if (gameTime <= now && game.state && !isTerminalGameState(game.state)) {
+    return true;
+  }
+  
+  return false;
+}

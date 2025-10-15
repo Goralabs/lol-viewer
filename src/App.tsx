@@ -11,6 +11,7 @@ import React from "react";
 import {SeriesScoreboardTest} from "./components/LiveStatusGameCard/SeriesScoreboardTest";
 import {SeriesEnhancementsTest} from "./components/LiveStatusGameCard/SeriesEnhancementsTest";
 import {SeriesPillColoringTest} from "./components/LiveStatusGameCard/SeriesPillColoringTest";
+import {TimeWindowTest} from "./components/LiveGameCard/TimeWindowTest";
 
 function App() {
     const { theme } = useTheme();
@@ -28,6 +29,7 @@ function App() {
                         <Route path="/test-series-scoreboard" element={<SeriesScoreboardTest/>}/>
                         <Route path="/test-series-enhancements" element={<SeriesEnhancementsTest/>}/>
                         <Route path="/test-pill-coloring" element={<SeriesPillColoringTest/>}/>
+                        <Route path="/test-time-window" element={<TimeWindowTest/>}/>
                         <Route path="*" element={<Navigate to="/"/>}/>
                     </Routes>
                 </div>
