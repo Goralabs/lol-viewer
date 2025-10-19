@@ -6,6 +6,7 @@ export interface Theme {
     '--background': string,
     '--gray-line': string,
     '--text': string,
+    '--text-secondary': string,
     '--text-highlight': string,
     '--title': string,
     '--red': string,

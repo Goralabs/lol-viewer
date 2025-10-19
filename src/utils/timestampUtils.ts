@@ -173,3 +173,46 @@ export function isGameInProgress<T extends { startTime: Date | string; state?: s
   
   return false;
 }
+
+/**
+ * Formats a timestamp to a localized 12-hour time format with AM/PM
+ * @param timestamp The timestamp to format (Date or string)
+ * @param includeDate Whether to include the date if not today (default: false)
+ * @returns Formatted time string (e.g., "3:05 PM" or "Tue 3:05 PM")
+ */
+export function formatLocalizedTime(
+  timestamp: Date | string,
+  includeDate: boolean = false
+): string {
+  try {
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return "TBD";
+    }
+    
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    const options: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    };
+    
+    let formattedTime = new Intl.DateTimeFormat(undefined, options).format(date);
+    
+    // If includeDate is true and it's not today, add the weekday
+    if (includeDate && !isToday) {
+      const weekdayOptions: Intl.DateTimeFormatOptions = { weekday: 'short' };
+      const weekday = new Intl.DateTimeFormat(undefined, weekdayOptions).format(date);
+      formattedTime = `${weekday} ${formattedTime}`;
+    }
+    
+    return formattedTime;
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return "TBD";
+  }
+}

@@ -1,5 +1,6 @@
 import {Link} from "react-router-dom";
 import {Event} from "./types/scheduleType";
+import {formatLocalizedTime} from "../../utils/timestampUtils";
 
 type Props = {
     game: Event;
@@ -29,6 +30,9 @@ export function ScheduleGameCard({ game }: Props) {
                         {game.match.teams[1].name}
                     </span>
                     </div>
+                </div>
+                <div className="live-game-card-time">
+                    {formatLocalizedTime(game.startTime, true)}
                 </div>
             </div>
         </Link>
