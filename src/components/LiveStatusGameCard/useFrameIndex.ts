@@ -203,6 +203,17 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           prev.displayIndex >= 0 && prev.displayIndex < prev.orderedTimestamps.length
             ? prev.orderedTimestamps[prev.displayIndex]
             : null;
+        
+        // Store the current timestamp to maintain position during backfill
+        // This is especially important for live mode where we want to stay at the same point in time
+        const currentTimestampToMaintain = prev.playbackPointer !== null
+          ? prev.orderedTimestamps[prev.playbackPointer]
+          : prevDisplayTs;
+          
+        // For live mode, we also want to track the latest timestamp to ensure we don't go backwards
+        const prevLatestTimestamp = prev.orderedTimestamps.length > 0
+          ? prev.orderedTimestamps[prev.orderedTimestamps.length - 1]
+          : null;
 
         windowFrames.forEach((frame) => {
           const epoch = toEpochMillis(frame.rfc460Timestamp);
@@ -261,6 +272,16 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
             ? prev.orderedTimestamps[prev.orderedTimestamps.length - 1]
             : null;
 
+        // Determine if this merge added earlier or later frames before
+        // adjusting indices, so we can preserve the visible timestamp.
+        const didAddEarlier =
+          sortedTimestamps.length > 0 &&
+          (prevEarliest === null || sortedTimestamps[0] < prevEarliest);
+        const didAddLater =
+          sortedTimestamps.length > 0 &&
+          (prevLatest === null ||
+            sortedTimestamps[sortedTimestamps.length - 1] > prevLatest);
+
         const livePointer =
           sortedTimestamps.length > 0 ? sortedTimestamps.length - 1 : -1;
 
@@ -280,10 +301,23 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         if (sortedTimestamps.length === 0) {
           displayIndex = -1;
         } else {
+          // When backfilling, we need to maintain the same timestamp position
+          // not the same array index
           if (prevDisplayTs !== null) {
             const newIndex = sortedTimestamps.indexOf(prevDisplayTs);
             if (newIndex !== -1) {
               displayIndex = newIndex;
+            } else if (prev.playbackPointer === null) {
+              // In live mode, if we can't find the exact timestamp (shouldn't happen),
+              // fall back to the latest frame to maintain live viewing
+              displayIndex = livePointer;
+              if (DEBUG_POLLING) {
+                console.warn('Could not find previous display timestamp, falling back to live pointer', {
+                  prevDisplayTs,
+                  livePointer,
+                  timestampsLength: sortedTimestamps.length
+                });
+              }
             }
           }
           if (displayIndex >= sortedTimestamps.length) {
@@ -291,6 +325,19 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           }
           if (displayIndex < 0 && playbackPointer === null && livePointer >= 0) {
             displayIndex = livePointer;
+          }
+          
+          // Debug logging for display index changes
+          if (DEBUG_POLLING && displayIndex !== prev.displayIndex) {
+            console.log('Display index changed', {
+              oldIndex: prev.displayIndex,
+              newIndex: displayIndex,
+              prevDisplayTs,
+              newDisplayTs: displayIndex >= 0 ? sortedTimestamps[displayIndex] : null,
+              addedEarlier,
+              addedLater,
+              isLiveMode: prev.playbackPointer === null
+            });
           }
         }
 
@@ -316,17 +363,93 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           if (newIndices.length > 0) {
             const combinedQueue = [...prev.playQueue, ...newIndices];
             playQueue = Array.from(new Set(combinedQueue)).sort((a, b) => a - b);
+            
+            if (DEBUG_POLLING) {
+              console.log('Updated play queue with new frames', {
+                newFramesCount: newIndices.length,
+                queueLength: playQueue.length,
+                lastQueuedIndex,
+                displayIndex
+              });
+            }
+          }
+        }
+        
+        // When backfill adds earlier frames, we need to adjust the existing play queue
+        // to account for the shifted indices
+        if (didAddEarlier && prev.playbackPointer === null && prev.playQueue.length > 0) {
+          const adjustedQueue: number[] = [];
+          for (const queueIndex of prev.playQueue) {
+            const queueTimestamp = prev.orderedTimestamps[queueIndex];
+            if (queueTimestamp !== undefined) {
+              const newIndex = sortedTimestamps.indexOf(queueTimestamp);
+              if (newIndex !== -1) {
+                adjustedQueue.push(newIndex);
+              }
+            }
+          }
+          
+          // Sort the adjusted queue to maintain order
+          playQueue = adjustedQueue.sort((a, b) => a - b);
+          
+          if (DEBUG_POLLING && adjustedQueue.length !== prev.playQueue.length) {
+            console.log('Adjusted play queue after backfill', {
+              oldQueueLength: prev.playQueue.length,
+              newQueueLength: adjustedQueue.length,
+              addedEarlierCount: sortedTimestamps.length - prev.orderedTimestamps.length
+            });
+          }
+        }
+        
+        // Special handling for backfill: if we added earlier frames and we're in live mode,
+        // we need to ensure the display index points to the same timestamp, not the same array position
+        if (didAddEarlier && prev.playbackPointer === null && currentTimestampToMaintain !== null) {
+          const maintainedIndex = sortedTimestamps.indexOf(currentTimestampToMaintain);
+          if (maintainedIndex !== -1) {
+            displayIndex = maintainedIndex;
+            if (DEBUG_POLLING) {
+              console.log('Backfill: Maintained timestamp position', {
+                currentTimestampToMaintain,
+                oldIndex: prev.displayIndex,
+                newIndex: maintainedIndex,
+                timestampsBefore: prev.orderedTimestamps.length,
+                timestampsAfter: sortedTimestamps.length,
+                prevLatestTimestamp
+              });
+            }
+          } else {
+            if (DEBUG_POLLING) {
+              console.error('Backfill: Could not find maintained timestamp in sorted timestamps', {
+                currentTimestampToMaintain,
+                sortedTimestamps: sortedTimestamps.slice(0, 10)
+              });
+            }
+          }
+        }
+        
+        // Additional safety check: in live mode, never let the display index go backwards in time
+        if (prev.playbackPointer === null && prevDisplayTs !== null && displayIndex >= 0) {
+          const currentDisplayTimestamp = sortedTimestamps[displayIndex];
+          if (currentDisplayTimestamp < prevDisplayTs) {
+            // Ensure we never rewind the visible frame during backfill
+            const safeIndex = sortedTimestamps.indexOf(prevDisplayTs);
+            if (safeIndex !== -1) {
+              displayIndex = safeIndex;
+            }
+            if (DEBUG_POLLING) {
+              console.warn('Backfill: Corrected rewind to preserve displayed timestamp', {
+                currentDisplayTimestamp,
+                prevDisplayTs,
+                correctedTo: safeIndex !== -1 ? sortedTimestamps[safeIndex] : null
+              });
+            }
           }
         }
 
         changed = true;
-        addedEarlier =
-          sortedTimestamps.length > 0 &&
-          (prevEarliest === null || sortedTimestamps[0] < prevEarliest);
-        addedLater =
-          sortedTimestamps.length > 0 &&
-          (prevLatest === null ||
-            sortedTimestamps[sortedTimestamps.length - 1] > prevLatest);
+        // Propagate earlier/later flags based on our precomputed values
+        addedEarlier = didAddEarlier;
+        addedLater = didAddLater;
 
         // Update isFinal flag if we detected a terminal state
         const nextIsFinal = prev.isFinal || hasTerminalState;
@@ -599,6 +722,14 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           await delay(BACKFILL_DELAY_MS);
           continue;
         }
+        
+        // Ensure scheduler continues running during backfill if we're in live mode
+        if (stateRef.current.orderedTimestamps.length > 0 &&
+            stateRef.current.playbackPointer === null &&
+            !stateRef.current.isLivePaused &&
+            schedulerTimerRef.current === null) {
+          startScheduler();
+        }
 
         if (mergeResult.addedEarlier) {
           const updatedState = stateRef.current;
@@ -618,6 +749,14 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       setFrameState((prev) =>
         prev.isBackfilling ? { ...prev, isBackfilling: false } : prev
       );
+      
+      // Ensure scheduler is running after backfill completes if we're in live mode
+      if (stateRef.current.orderedTimestamps.length > 0 &&
+          stateRef.current.playbackPointer === null &&
+          !stateRef.current.isLivePaused &&
+          schedulerTimerRef.current === null) {
+        startScheduler();
+      }
     }
   }, [fetchChunk, gameId, markHasFirstFrame, mergeFrames, setFrameState]);
 
@@ -652,11 +791,13 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
     }
 
     if (DEBUG_POLLING) {
+      console.log('Starting live polling for game:', gameId);
     }
 
     const poll = async () => {
       if (!isMountedRef.current || cancelBackfillRef.current) {
         if (DEBUG_POLLING) {
+          console.log('Stopping polling - component unmounted or cancelled');
         }
         return;
       }
@@ -664,6 +805,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       // Stop polling if the game is in a terminal state
       if (stateRef.current.isFinal) {
         if (DEBUG_POLLING) {
+          console.log('Stopping polling - game in terminal state');
         }
         
         if (pollIntervalRef.current) {
@@ -677,6 +819,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         }
         
         if (DEBUG_POLLING) {
+          console.log('Setting up backoff timer for terminal state');
         }
         
         finalStateBackoffRef.current = setTimeout(() => {
@@ -685,6 +828,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           }
           
           if (DEBUG_POLLING) {
+            console.log('Backoff timer triggered - resuming polling');
           }
           
           // Reset isFinal flag and resume polling
@@ -705,6 +849,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         }
         
         // Start scheduler if we have frames and we're in live mode
+        // Continue running even during backfill
         if (stateRef.current.orderedTimestamps.length > 0 &&
             stateRef.current.playbackPointer === null &&
             !stateRef.current.isLivePaused &&
@@ -715,12 +860,14 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         // If after merging frames we detect a terminal state, stop polling
         if (stateRef.current.isFinal && pollIntervalRef.current) {
           if (DEBUG_POLLING) {
+            console.log('Detected terminal state after merge - stopping polling');
           }
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
-      } catch (error) {
+      } catch {
         if (DEBUG_POLLING) {
+          console.log('Error in polling, will retry');
         }
         // swallow errors; next poll will retry
       }
@@ -797,7 +944,6 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         return prev;
       }
       // Reset display index to latest and resume live playback
-      const { ...rest } = prev;
       return {
         ...prev,
         playbackPointer: null,
