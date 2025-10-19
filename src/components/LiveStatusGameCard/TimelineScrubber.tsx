@@ -13,13 +13,15 @@ interface TimelineScrubberProps {
   
   // Live playback props
   isLivePaused: boolean;
-  desiredLagMs: number;
   speedFactor: number;
   displayedTs: number | null;
   pauseLive: () => void;
   resumeLive: () => void;
-  setDesiredLagMs: (ms: number) => void;
   setSpeedFactor: (factor: number) => void;
+  
+  // Optional props for backward compatibility
+  desiredLagMs?: number;
+  setDesiredLagMs?: (ms: number) => void;
 }
 
 export function TimelineScrubber({
@@ -32,12 +34,10 @@ export function TimelineScrubber({
   
   // Live playback props
   isLivePaused,
-  desiredLagMs,
   speedFactor,
   displayedTs,
   pauseLive,
   resumeLive,
-  setDesiredLagMs,
   setSpeedFactor,
 }: TimelineScrubberProps) {
   const { isBackfillEnabled } = useBackfill();
@@ -103,8 +103,10 @@ export function TimelineScrubber({
   const currentTime = value !== null ? value : (displayedTs || maxTime);
   const isLiveMode = value === null;
 
-  // Calculate current lag for display
-  const currentLag = displayedTs !== null ? maxTime - displayedTs : desiredLagMs;
+  // Calculate current lag for display (only used in live mode)
+  // Since we removed desiredLagMs, we'll use a default value for display
+  const DEFAULT_LAG_MS = 10000; // 10 seconds default
+  const currentLag = displayedTs !== null ? maxTime - displayedTs : DEFAULT_LAG_MS;
 
   return (
     <div className="timeline-scrubber">
@@ -117,8 +119,8 @@ export function TimelineScrubber({
           LIVE
         </button>
         
-        {/* Pause/Resume button - only show in live mode */}
-        {isLiveMode && (
+        {/* Pause/Resume button - only show in manual mode (not live) */}
+        {!isLiveMode && (
           <button
             className={`timeline-pause-button ${isLivePaused ? "paused" : ""}`}
             onClick={handlePauseResume}
@@ -129,8 +131,8 @@ export function TimelineScrubber({
           </button>
         )}
         
-        {/* Speed control - only show in live mode */}
-        {isLiveMode && (
+        {/* Speed control - only show in manual mode (not live) */}
+        {!isLiveMode && (
           <div className="timeline-speed-container">
             <button
               className="timeline-speed-button"
@@ -156,12 +158,6 @@ export function TimelineScrubber({
                   1.0×
                 </button>
                 <button
-                  className={speedFactor === 1.25 ? "active" : ""}
-                  onClick={() => handleSpeedChange(1.25)}
-                >
-                  1.25×
-                </button>
-                <button
                   className={speedFactor === 1.5 ? "active" : ""}
                   onClick={() => handleSpeedChange(1.5)}
                 >
@@ -172,6 +168,12 @@ export function TimelineScrubber({
                   onClick={() => handleSpeedChange(2.0)}
                 >
                   2.0×
+                </button>
+                <button
+                  className={speedFactor === 5.0 ? "active" : ""}
+                  onClick={() => handleSpeedChange(5.0)}
+                >
+                  5.0×
                 </button>
               </div>
             )}
@@ -190,6 +192,13 @@ export function TimelineScrubber({
         {isLiveMode && !isBackfilling && (
           <span className="timeline-status timeline-buffer-info" title={`Buffer: ${formatLag(currentLag)} behind live`}>
             LIVE {isLivePaused ? "(PAUSED)" : `(-${formatLag(currentLag)})`}
+          </span>
+        )}
+        
+        {/* Manual mode indicator - only show in manual mode */}
+        {!isLiveMode && (
+          <span className="timeline-status timeline-manual-info">
+            MANUAL {isLivePaused ? "(PAUSED)" : "(PLAYING)"}
           </span>
         )}
       </div>

@@ -78,8 +78,8 @@ const FINAL_STATE_BACKOFF_MS = 60_000; // 1 minute backoff for finished games
 const DEFAULT_DESIRED_LAG_MS = 10_000; // 10 seconds behind live
 const MIN_FRAME_MS = 150; // Minimum time between frames
 const MAX_FRAME_MS = 4000; // Maximum time between frames
-const DRIFT_CHECK_INTERVAL_MS = 5000; // Check drift every 5 seconds
-const MAX_SPEED_FACTOR = 2.0; // Maximum playback speed
+// DRIFT_CHECK_INTERVAL_MS is no longer needed since we removed automatic speed adjustments
+const MAX_SPEED_FACTOR = 10.0; // Maximum playback speed
 
 // Debug logging flag
 const DEBUG_POLLING = process.env.NODE_ENV === 'development';
@@ -133,7 +133,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
   const schedulerTimerRef = useRef<NodeJS.Timeout | null>(null);
   const anchorWallRef = useRef<number>(Date.now());
   const anchorTsRef = useRef<number>(0);
-  const driftCheckTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // driftCheckTimerRef is no longer needed since we removed automatic speed adjustments
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -156,10 +156,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         clearTimeout(schedulerTimerRef.current);
         schedulerTimerRef.current = null;
       }
-      if (driftCheckTimerRef.current) {
-        clearInterval(driftCheckTimerRef.current);
-        driftCheckTimerRef.current = null;
-      }
+      // driftCheckTimerRef cleanup is no longer needed
     };
   }, []);
 
@@ -492,17 +489,41 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       clearTimeout(schedulerTimerRef.current);
       schedulerTimerRef.current = null;
     }
-    if (driftCheckTimerRef.current) {
-      clearInterval(driftCheckTimerRef.current);
-      driftCheckTimerRef.current = null;
-    }
+    // driftCheckTimerRef cleanup is no longer needed
   }, []);
 
   const showNextFrame = useCallback(() => {
     if (!isMountedRef.current) return;
 
     setFrameState(prev => {
-      if (prev.playQueue.length === 0 || prev.isLivePaused || prev.playbackPointer !== null) {
+      // For manual mode, we need to advance the playback pointer
+      if (prev.playbackPointer !== null) {
+        const nextIndex = prev.playbackPointer + 1;
+        const livePtr = prev.livePointer;
+        if (nextIndex <= livePtr) {
+          return {
+            ...prev,
+            playbackPointer: nextIndex,
+            displayIndex: nextIndex
+          };
+        }
+        // Reached last frame. If game is not finished, auto-switch to live; otherwise pause.
+        if (!prev.isFinal) {
+          return {
+            ...prev,
+            playbackPointer: null,
+            displayIndex: prev.livePointer,
+            isLivePaused: false,
+          };
+        }
+        return {
+          ...prev,
+          isLivePaused: true,
+        };
+      }
+      
+      // For live mode, use the play queue
+      if (prev.playQueue.length === 0 || prev.isLivePaused) {
         return prev;
       }
 
@@ -521,10 +542,38 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
     if (!isMountedRef.current) return;
 
     const currentState = stateRef.current;
+    
+    // For manual mode, check if we can advance
+    if (currentState.playbackPointer !== null) {
+      if (currentState.isLivePaused || currentState.playbackPointer >= currentState.livePointer) {
+        schedulerTimerRef.current = null;
+        return;
+      }
+      
+      const nextIndex = currentState.playbackPointer + 1;
+      const nextTs = currentState.orderedTimestamps[nextIndex];
+      const currentTs = currentState.orderedTimestamps[currentState.playbackPointer];
+      
+      if (nextTs === undefined || currentTs === undefined) {
+        schedulerTimerRef.current = null;
+        return;
+      }
+
+      const rawDelta = nextTs - currentTs;
+      const adjustedDelta = rawDelta > 0 ? rawDelta / currentState.speedFactor : MIN_FRAME_MS;
+      const dt = Math.max(MIN_FRAME_MS, Math.min(MAX_FRAME_MS, adjustedDelta));
+
+      schedulerTimerRef.current = setTimeout(() => {
+        showNextFrame();
+        scheduleNextFrame();
+      }, dt);
+      return;
+    }
+    
+    // For live mode, use the play queue
     if (
       currentState.playQueue.length === 0 ||
-      currentState.isLivePaused ||
-      currentState.playbackPointer !== null
+      currentState.isLivePaused
     ) {
       schedulerTimerRef.current = null;
       return;
@@ -577,49 +626,13 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       anchorTsRef.current = displayTs;
     }
 
-    // Start drift checking
-    if (driftCheckTimerRef.current) {
-      clearInterval(driftCheckTimerRef.current);
-    }
-    
-    driftCheckTimerRef.current = setInterval(() => {
-      if (!isMountedRef.current || stateRef.current.isLivePaused || stateRef.current.playbackPointer !== null) {
-        return;
-      }
-
-      const currentState = stateRef.current;
-      if (currentState.orderedTimestamps.length === 0 || currentState.displayIndex < 0) return;
-
-      const displayedTs = currentState.orderedTimestamps[currentState.displayIndex];
-      const latestTs = currentState.orderedTimestamps[currentState.orderedTimestamps.length - 1];
-      const currentLag = latestTs - displayedTs;
-
-      // Adjust speed factor if we're drifting too far from target lag
-      if (currentLag > currentState.desiredLagMs + 5000) {
-        // We're too far behind, increase speed
-        setFrameState(prev => ({
-          ...prev,
-          speedFactor: Math.min(MAX_SPEED_FACTOR, prev.speedFactor * 1.1)
-        }));
-      } else if (currentLag < currentState.desiredLagMs - 2000) {
-        // We're too far ahead, pause briefly
-        setFrameState(prev => ({
-          ...prev,
-          speedFactor: Math.max(0.5, prev.speedFactor * 0.9)
-        }));
-      } else if (Math.abs(currentLag - currentState.desiredLagMs) < 1000) {
-        // We're close to target, reset to normal speed
-        setFrameState(prev => ({
-          ...prev,
-          speedFactor: 1.0
-        }));
-      }
-    }, DRIFT_CHECK_INTERVAL_MS);
+    // Drift checking has been removed to prevent automatic speed adjustments
+    // Speed should only change via explicit user input
 
     scheduleNextFrame();
   }, [scheduleNextFrame]);
 
-  // Live playback control functions
+  // Playback control functions
   const pauseLive = useCallback(() => {
     stopScheduler();
     setFrameState(prev => ({ ...prev, isLivePaused: true }));
@@ -944,11 +957,13 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         return prev;
       }
       // Reset display index to latest and resume live playback
+      // Keep the current speed factor and other settings
       return {
         ...prev,
         playbackPointer: null,
         displayIndex: prev.livePointer,
         isLivePaused: false
+        // speedFactor is preserved from prev
       };
     });
     
@@ -976,7 +991,9 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         return {
           ...prev,
           playbackPointer: index,
-          displayIndex: index
+          displayIndex: index,
+          // Enter manual mode paused so the play button starts playback
+          isLivePaused: true
         };
       });
     },

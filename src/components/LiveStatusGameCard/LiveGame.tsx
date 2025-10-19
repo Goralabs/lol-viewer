@@ -80,12 +80,10 @@ export function LiveGame() {
         
         // Live playback controls
         isLivePaused,
-        desiredLagMs,
         speedFactor,
         displayedTs,
         pauseLive,
         resumeLive,
-        setDesiredLagMs,
         setSpeedFactor,
     } = useFrameIndex(selectedGameId || "");
 
@@ -261,12 +259,10 @@ export function LiveGame() {
                     
                     // Live playback props
                     isLivePaused={isLivePaused}
-                    desiredLagMs={desiredLagMs}
                     speedFactor={speedFactor}
                     displayedTs={displayedTs}
                     pauseLive={pauseLive}
                     resumeLive={resumeLive}
-                    setDesiredLagMs={setDesiredLagMs}
                     setSpeedFactor={setSpeedFactor}
                 />
             )}
