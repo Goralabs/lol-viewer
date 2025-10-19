@@ -6,6 +6,7 @@ import {HashRouter, Routes, Route, Navigate} from "react-router-dom";
 import {Footer} from "./components/Footer/Footer";
 import {LiveGames} from "./components/LiveGameCard/LiveGames";
 import {Navbar} from "./components/Navbar/Navbar";
+import {MetaTags} from "./components/Meta/MetaTags";
 import { useTheme } from './theme/ThemeContext'
 import React from "react";
 
@@ -15,6 +16,7 @@ function App() {
     return (
         <HashRouter basename="/">
             <div className="theme-container" style={{...theme as React.CSSProperties}}>
+                <MetaTags />
                 <Navbar/>
                 <div className="container">
                     <Routes>

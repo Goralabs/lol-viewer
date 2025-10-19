@@ -1,0 +1,45 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient using project dark theme colors -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2A2E35"/>
+      <stop offset="100%" stop-color="#2A2E35"/>
+    </linearGradient>
+    <!-- Project accent gradient (blue) -->
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5965E0"/>
+      <stop offset="100%" stop-color="#4953B8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Mark / emblem placeholder with brand accent -->
+  <g transform="translate(100, 100)">
+    <circle cx="50" cy="50" r="50" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="250" font-family="Inter, sans-serif" font-size="72" font-weight="700" text-anchor="middle" fill="#FFFFFF">
+    Live LoL Esports
+  </text>
+
+  <!-- Subtitle (brand accent) -->
+  <text x="600" y="320" font-family="Inter, sans-serif" font-size="32" font-weight="500" text-anchor="middle" fill="#FF1B1B">
+    Real-time League of Legends Esports Viewer
+  </text>
+
+  <!-- Features -->
+  <g transform="translate(600, 400)">
+    <text font-family="Inter, sans-serif" font-size="24" font-weight="400" text-anchor="middle" fill="#FFFFFF">
+      <tspan x="0" dy="0">Live Match Data • Gold Graphs • Objective Timelines</tspan>
+      <tspan x="0" dy="35">Post-Game Insights • Schedules • Responsive Design</tspan>
+    </text>
+  </g>
+
+  <!-- URL (brand accent) -->
+  <text x="600" y="550" font-family="Inter, sans-serif" font-size="28" font-weight="600" text-anchor="middle" fill="#FF1B1B">
+    live-lol-esports.goralabs.dev
+  </text>
+</svg>

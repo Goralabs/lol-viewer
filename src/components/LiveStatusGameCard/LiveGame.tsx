@@ -17,6 +17,7 @@ import { GoldGraph } from "./GoldGraph";
 import { ObjectiveTimeline } from "./ObjectiveTimeline";
 import { useResponsive } from "../../hooks/useResponsive";
 import { useBackfill } from "../Navbar/BackfillContext";
+import { MetaTags } from "../Meta/MetaTags";
 
 export function LiveGame() {
     const [gameData, setGameData] = useState<GameDetails>();
@@ -204,8 +205,47 @@ export function LiveGame() {
     // Use metadata from the hook
     const metadata = currentMetadata;
 
+    // Generate dynamic metadata for the game
+    const gameMetaTitle = useMemo(() => {
+        if (!gameData || !gameData.data.event.match.teams || selectedGameNumber === undefined) {
+            return "Live LoL Esports - Real-time League of Legends Esports Viewer";
+        }
+        
+        const teams = gameData.data.event.match.teams;
+        const team1Name = teams[0]?.name || "Team 1";
+        const team2Name = teams[1]?.name || "Team 2";
+        const gameNumber = selectedGameNumber;
+        
+        return `${team1Name} vs ${team2Name} - Game ${gameNumber} | Live LoL Esports`;
+    }, [gameData, selectedGameNumber]);
+
+    const gameMetaDescription = useMemo(() => {
+        if (!gameData || !gameData.data.event.match.teams || selectedGameNumber === undefined) {
+            return "Follow League of Legends esports in real-time. View live match data, schedules, gold graphs, objective timelines, and post-game insights.";
+        }
+        
+        const teams = gameData.data.event.match.teams;
+        const team1Name = teams[0]?.name || "Team 1";
+        const team2Name = teams[1]?.name || "Team 2";
+        const gameNumber = selectedGameNumber;
+        const leagueName = gameData.data.event.league?.name || "League of Legends Esports";
+        
+        return `Watch ${team1Name} vs ${team2Name} in Game ${gameNumber} of the ${leagueName}. Real-time stats, gold graphs, and objective timelines.`;
+    }, [gameData, selectedGameNumber]);
+
+    const gameMetaUrl = useMemo(() => {
+        return `https://live-lol-esports.goralabs.dev/#/live/${matchId}`;
+    }, [matchId]);
+
     return (
         <div>
+            <MetaTags
+                title={gameMetaTitle}
+                description={gameMetaDescription}
+                url={gameMetaUrl}
+                type="website"
+            />
+            
             {/* Series Scoreboard */}
             {seriesScoreboard}
 
