@@ -271,6 +271,29 @@ export function LiveGame() {
                 />
             )}
 
+            {/* Content - Players Table */}
+            {currentWindow !== undefined &&
+            currentDetails !== undefined &&
+            metadata !== undefined &&
+            gameData !== undefined ? (
+                <PlayersTable
+                    lastFrameWindow={currentWindow}
+                    lastFrameDetails={currentDetails}
+                    gameMetadata={metadata}
+                    gameDetails={gameData}
+                    isLive={isLive}
+                    isFinal={isFinal}
+                />
+            ) : isUpcomingGame ? (
+                <div className="loading-game-container">
+                    <span>Selected game has not started yet.</span>
+                </div>
+            ) : (
+                <div className="loading-game-container">
+                    <Loading className="loading-game-image" />
+                </div>
+            )}
+
             {/* Live Game Enhancements - New Components */}
             {currentWindow && currentDetails && metadata && hasFullTimeline && (
                 <>
@@ -321,30 +344,6 @@ export function LiveGame() {
                         </div>
                     )}
                 </>
-            )}
-
-
-            {/* Content */}
-            {currentWindow !== undefined &&
-            currentDetails !== undefined &&
-            metadata !== undefined &&
-            gameData !== undefined ? (
-                <PlayersTable
-                    lastFrameWindow={currentWindow}
-                    lastFrameDetails={currentDetails}
-                    gameMetadata={metadata}
-                    gameDetails={gameData}
-                    isLive={isLive}
-                    isFinal={isFinal}
-                />
-            ) : isUpcomingGame ? (
-                <div className="loading-game-container">
-                    <span>Selected game has not started yet.</span>
-                </div>
-            ) : (
-                <div className="loading-game-container">
-                    <Loading className="loading-game-image" />
-                </div>
             )}
         </div>
     );
