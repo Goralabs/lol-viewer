@@ -25,7 +25,7 @@ export function getSchedule() {
     })
 }
 
-export function getLiveWindowGame(gameId: string, date?: string) {
+export function getLiveWindowGame(gameId: string, date?: string, signal?: AbortSignal) {
     const params: Record<string, string> = {
         "hl": "en-US",
     };
@@ -39,10 +39,11 @@ export function getLiveWindowGame(gameId: string, date?: string) {
         headers: {
             "x-api-key": API_KEY,
         },
+        signal,
     })
 }
 
-export function getLiveDetailsGame(gameId: string, date: string) {
+export function getLiveDetailsGame(gameId: string, date: string, signal?: AbortSignal) {
     return axios.get(`${API_URL_LIVE}/details/${gameId}`, {
         params: {
             "hl": "en-US",
@@ -51,6 +52,7 @@ export function getLiveDetailsGame(gameId: string, date: string) {
         headers: {
             "x-api-key": API_KEY,
         },
+        signal,
     })
 }
 

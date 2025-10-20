@@ -69,9 +69,11 @@ interface MergeResult {
 }
 
 const BACKFILL_STEP_MS = 10_000;
-const BACKFILL_DELAY_MS = 200;
+const BACKFILL_DELAY_MS = 700; // Base delay between backfill batches
 const BACKFILL_RETRY_DELAY_MS = 1_000;
-const LIVE_POLL_INTERVAL_MS = 500;
+const BACKFILL_CONCURRENCY = 10; // Bounded concurrency to avoid request spikes
+const BACKFILL_BATCH_JITTER_MS = 50; // Small jitter between batches
+const LIVE_POLL_INTERVAL_MS = 1000; // Reduce request rate for live polling
 const FINAL_STATE_BACKOFF_MS = 60_000; // 1 minute backoff for finished games
 
 // Live playback constants
@@ -127,7 +129,10 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
   const cancelBackfillRef = useRef(false);
   const backfillCursorRef = useRef<number | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingInFlightRef = useRef(false);
   const finalStateBackoffRef = useRef<NodeJS.Timeout | null>(null);
+  const backfillAbortControllerRef = useRef<AbortController | null>(null);
+  const forwardAbortControllerRef = useRef<AbortController | null>(null);
   
   // Live playback refs
   const schedulerTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -135,8 +140,34 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
   const anchorTsRef = useRef<number>(0);
   // driftCheckTimerRef is no longer needed since we removed automatic speed adjustments
 
+  // Function to stop backfill immediately
+  const stopBackfill = useCallback(() => {
+    if (!backfillRunningRef.current) return;
+    
+    cancelBackfillRef.current = true;
+    backfillRunningRef.current = false;
+    backfillStartedRef.current = false;
+    backfillCursorRef.current = null;
+    
+    // Cancel any ongoing backfill requests
+    if (backfillAbortControllerRef.current) {
+      backfillAbortControllerRef.current.abort();
+      backfillAbortControllerRef.current = null;
+    }
+    
+    setFrameState(prev =>
+      prev.isBackfilling ? { ...prev, isBackfilling: false } : prev
+    );
+  }, [setFrameState]);
+
   useEffect(() => {
     isMountedRef.current = true;
+    
+    // Register the stopBackfill function with the BackfillContext
+    if (typeof window !== 'undefined' && (window as { __registerStopBackfill?: (fn: () => void) => void }).__registerStopBackfill) {
+      (window as { __registerStopBackfill?: (fn: () => void) => void }).__registerStopBackfill(stopBackfill);
+    }
+    
     return () => {
       isMountedRef.current = false;
       cancelBackfillRef.current = true;
@@ -145,6 +176,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       backfillCursorRef.current = null;
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
+        clearTimeout(pollIntervalRef.current);
         pollIntervalRef.current = null;
       }
       if (finalStateBackoffRef.current) {
@@ -156,9 +188,14 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         clearTimeout(schedulerTimerRef.current);
         schedulerTimerRef.current = null;
       }
+      // Cancel any ongoing backfill requests
+      if (backfillAbortControllerRef.current) {
+        backfillAbortControllerRef.current.abort();
+        backfillAbortControllerRef.current = null;
+      }
       // driftCheckTimerRef cleanup is no longer needed
     };
-  }, []);
+  }, [stopBackfill]);
 
   const mergeFrames = useCallback(
     (
@@ -449,7 +486,17 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         addedLater = didAddLater;
 
         // Update isFinal flag if we detected a terminal state
-        const nextIsFinal = prev.isFinal || hasTerminalState;
+        // Also consider any existing in-memory frames that already indicate a terminal state
+        let existingTerminal = prev.isFinal;
+        if (!existingTerminal) {
+          for (const f of nextWindow.values()) {
+            if (isTerminalGameState(f.gameState)) {
+              existingTerminal = true;
+              break;
+            }
+          }
+        }
+        const nextIsFinal = existingTerminal || hasTerminalState;
 
         return {
           ...prev,
@@ -652,14 +699,14 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
   }, []);
 
   const fetchChunk = useCallback(
-    async (startingTime: string) => {
+    async (startingTime: string, signal?: AbortSignal) => {
       if (!gameId) {
         return { windowFrames: [] as FrameWindow[], detailFrames: [] as FrameDetails[], metadata: undefined as GameMetadata | undefined };
       }
 
       const [windowResponse, detailsResponse] = await Promise.all([
-        getLiveWindowGame(gameId, startingTime),
-        getLiveDetailsGame(gameId, startingTime),
+        getLiveWindowGame(gameId, startingTime, signal),
+        getLiveDetailsGame(gameId, startingTime, signal),
       ]);
 
       const windowFrames: FrameWindow[] = windowResponse.data?.frames ?? [];
@@ -677,6 +724,8 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
 
     backfillRunningRef.current = true;
     cancelBackfillRef.current = false;
+    // Create a controller to allow cancelling all in-flight backfill requests
+    backfillAbortControllerRef.current = new AbortController();
 
     setFrameState((prev) =>
       prev.isBackfilling ? prev : { ...prev, isBackfilling: true }
@@ -692,48 +741,125 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           break;
         }
 
+        // Initialize cursor if needed
         if (backfillCursorRef.current === null) {
           const anchorTs = currentState.orderedTimestamps[0];
           if (anchorTs === undefined) {
             break;
           }
           const roundedAnchor = roundToPrevious10s(new Date(anchorTs)).getTime();
-          backfillCursorRef.current = roundedAnchor;
+          backfillCursorRef.current = roundedAnchor - BACKFILL_STEP_MS;
         }
 
-        const targetCursor = backfillCursorRef.current - BACKFILL_STEP_MS;
-        backfillCursorRef.current = targetCursor;
-
-        if (!Number.isFinite(targetCursor)) {
-          markHasFirstFrame();
-          break;
-        }
-
-        const targetTime = toISO(new Date(targetCursor));
-
-        let chunk;
-        try {
-          chunk = await fetchChunk(targetTime);
-        } catch {
-          if (!isMountedRef.current || cancelBackfillRef.current) {
+        // Determine the timestamps to fetch based on concurrency, always stepping further back in time
+        const targetTimestamps: number[] = [];
+        const currentCursor = backfillCursorRef.current ?? 0;
+        
+        for (let i = 0; i < BACKFILL_CONCURRENCY; i++) {
+          const targetCursor = currentCursor - (BACKFILL_STEP_MS * i);
+          if (!Number.isFinite(targetCursor)) {
             break;
           }
-          await delay(BACKFILL_RETRY_DELAY_MS);
-          continue;
+          targetTimestamps.push(targetCursor);
         }
 
-        const { windowFrames, detailFrames, metadata } = chunk;
-
-        if (windowFrames.length === 0 && detailFrames.length === 0) {
+        if (targetTimestamps.length === 0) {
           markHasFirstFrame();
           break;
         }
 
-        const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
+        // Create fetch promises with retry logic
+        const fetchPromises = targetTimestamps.map(async (targetCursor) => {
+          const targetTime = toISO(new Date(targetCursor));
+          let retryCount = 0;
+          const maxRetries = 3;
 
-        if (!mergeResult.changed) {
-          await delay(BACKFILL_DELAY_MS);
-          continue;
+          while (retryCount <= maxRetries) {
+            // Check if we should abort before making the request
+            if (cancelBackfillRef.current || backfillAbortControllerRef.current?.signal.aborted) {
+              throw new Error('Backfill cancelled');
+            }
+
+            try {
+              const chunk = await fetchChunk(targetTime, backfillAbortControllerRef.current?.signal);
+              return { chunk, targetCursor };
+            } catch (error) {
+              retryCount++;
+              if (retryCount > maxRetries || cancelBackfillRef.current) {
+                // Log the error but don't fail the entire batch
+                if (DEBUG_POLLING) {
+                  console.warn(`Backfill chunk failed after ${maxRetries} retries:`, error);
+                }
+                return null;
+              }
+              
+              // Exponential backoff with jitter
+              const baseDelay = BACKFILL_RETRY_DELAY_MS;
+              const exponentialDelay = baseDelay * Math.pow(2, retryCount - 1);
+              const jitter = Math.random() * 100; // Add up to 100ms jitter
+              await delay(exponentialDelay + jitter);
+            }
+          }
+          
+          return null;
+        });
+
+        // Wait for all fetches to complete (or fail)
+        const results = await Promise.allSettled(fetchPromises);
+        
+        // Process successful results
+        let anyProgress = false;
+        let sawFrames = false;
+        let earliestFetchedTimestamp = Number.POSITIVE_INFINITY;
+        
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value !== null) {
+            const { chunk, targetCursor } = result.value;
+            const { windowFrames, detailFrames, metadata } = chunk;
+            
+            if (windowFrames.length > 0 || detailFrames.length > 0) {
+              sawFrames = true;
+              const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
+              if (mergeResult.changed) {
+                anyProgress = true;
+              }
+              if (targetCursor < earliestFetchedTimestamp) {
+                earliestFetchedTimestamp = targetCursor;
+              }
+            }
+          }
+        }
+        
+        if (anyProgress) {
+          const updatedEarliest = stateRef.current.orderedTimestamps[0];
+          if (updatedEarliest === undefined) {
+            markHasFirstFrame();
+            break;
+          }
+          const rounded = roundToPrevious10s(new Date(updatedEarliest)).getTime();
+          backfillCursorRef.current = rounded - BACKFILL_STEP_MS;
+        } else {
+          if (!sawFrames) {
+            // All requests returned empty/204 – we've reached the beginning
+            markHasFirstFrame();
+            break;
+          }
+
+          const fallbackCursor = Number.isFinite(earliestFetchedTimestamp)
+            ? earliestFetchedTimestamp - BACKFILL_STEP_MS
+            : (() => {
+                const updatedEarliest = stateRef.current.orderedTimestamps[0];
+                return updatedEarliest !== undefined
+                  ? roundToPrevious10s(new Date(updatedEarliest)).getTime() - BACKFILL_STEP_MS
+                  : Number.NaN;
+              })();
+
+          if (!Number.isFinite(fallbackCursor)) {
+            markHasFirstFrame();
+            break;
+          }
+
+          backfillCursorRef.current = fallbackCursor;
         }
         
         // Ensure scheduler continues running during backfill if we're in live mode
@@ -743,22 +869,18 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
             schedulerTimerRef.current === null) {
           startScheduler();
         }
-
-        if (mergeResult.addedEarlier) {
-          const updatedState = stateRef.current;
-          const updatedAnchor = updatedState.orderedTimestamps[0];
-          if (updatedAnchor !== undefined) {
-            backfillCursorRef.current = roundToPrevious10s(
-              new Date(updatedAnchor)
-            ).getTime();
-          }
+        
+        // Add jitter between batches to avoid overwhelming the API
+        if (targetTimestamps.length === BACKFILL_CONCURRENCY) {
+          await delay(BACKFILL_DELAY_MS + (Math.random() * BACKFILL_BATCH_JITTER_MS));
+        } else {
+          await delay(BACKFILL_DELAY_MS);
         }
-
-        await delay(BACKFILL_DELAY_MS);
       }
     } finally {
       backfillRunningRef.current = false;
       backfillStartedRef.current = stateRef.current.hasFirstFrame;
+      backfillAbortControllerRef.current = null;
       setFrameState((prev) =>
         prev.isBackfilling ? { ...prev, isBackfilling: false } : prev
       );
@@ -771,35 +893,18 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         startScheduler();
       }
     }
-  }, [fetchChunk, gameId, markHasFirstFrame, mergeFrames, setFrameState]);
+  }, [fetchChunk, gameId, markHasFirstFrame, mergeFrames, setFrameState, startScheduler]);
 
-  const maybeStartBackfill = useCallback(() => {
-    if (
-      backfillStartedRef.current ||
-      backfillRunningRef.current ||
-      cancelBackfillRef.current ||
-      !isMountedRef.current ||
-      !isBackfillEnabled
-    ) {
-      return;
-    }
-
-    const current = stateRef.current;
-    if (current.hasFirstFrame || current.orderedTimestamps.length === 0) {
-      return;
-    }
-
-    backfillStartedRef.current = true;
-    void runBackfill();
-  }, [runBackfill, isBackfillEnabled]);
 
   const startLivePolling = useCallback(() => {
     if (!gameId) {
       return;
     }
 
+    // Clear any existing interval/timeout
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
+      clearTimeout(pollIntervalRef.current);
       pollIntervalRef.current = null;
     }
 
@@ -807,12 +912,70 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       console.log('Starting live polling for game:', gameId);
     }
 
+    const scheduleNextPoll = (delayMs: number) => {
+      if (!isMountedRef.current || cancelBackfillRef.current) return;
+      if (pollIntervalRef.current) {
+        clearTimeout(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      pollIntervalRef.current = setTimeout(poll, delayMs);
+    };
+
     const poll = async () => {
+      if (pollingInFlightRef.current) {
+        scheduleNextPoll(LIVE_POLL_INTERVAL_MS);
+        return;
+      }
+
       if (!isMountedRef.current || cancelBackfillRef.current) {
         if (DEBUG_POLLING) {
           console.log('Stopping polling - component unmounted or cancelled');
         }
         return;
+      }
+
+      pollingInFlightRef.current = true;
+
+      // If any existing in-memory frame indicates a terminal state, stop polling immediately
+      if (!stateRef.current.isFinal) {
+        let anyTerminal = false;
+        for (const f of stateRef.current.framesWindow.values()) {
+          if (isTerminalGameState(f.gameState)) {
+            anyTerminal = true;
+            break;
+          }
+        }
+        if (anyTerminal) {
+          if (DEBUG_POLLING) {
+            console.log('Detected terminal state from in-memory frames - stopping polling');
+          }
+          // Mark as final and stop polling with backoff (reuse existing logic)
+          setFrameState(prev => ({ ...prev, isFinal: true }));
+
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            clearTimeout(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+
+          if (finalStateBackoffRef.current) {
+            clearTimeout(finalStateBackoffRef.current);
+          }
+
+          finalStateBackoffRef.current = setTimeout(() => {
+            if (!isMountedRef.current || cancelBackfillRef.current) {
+              return;
+            }
+            if (DEBUG_POLLING) {
+              console.log('Backoff timer triggered after in-memory terminal detection - resuming polling');
+            }
+            setFrameState(prev => ({ ...prev, isFinal: false }));
+            startLivePolling();
+          }, FINAL_STATE_BACKOFF_MS);
+
+          pollingInFlightRef.current = false;
+          return;
+        }
       }
 
       // Stop polling if the game is in a terminal state
@@ -823,6 +986,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
+          clearTimeout(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
         
@@ -849,17 +1013,22 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           startLivePolling();
         }, FINAL_STATE_BACKOFF_MS);
         
+        pollingInFlightRef.current = false;
         return;
       }
 
       try {
-        const { windowFrames, detailFrames, metadata } = await fetchChunk(
-          getISODateMultiplyOf10()
-        );
-        const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
-        if (mergeResult.hasFramesAfter) {
-          maybeStartBackfill();
+        // Abort any previous in-flight forward request before starting a new one
+        if (forwardAbortControllerRef.current) {
+          forwardAbortControllerRef.current.abort();
         }
+        forwardAbortControllerRef.current = new AbortController();
+
+        const { windowFrames, detailFrames, metadata } = await fetchChunk(
+          getISODateMultiplyOf10(),
+          forwardAbortControllerRef.current.signal
+        );
+        mergeFrames(windowFrames, detailFrames, metadata);
         
         // Start scheduler if we have frames and we're in live mode
         // Continue running even during backfill
@@ -876,6 +1045,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
             console.log('Detected terminal state after merge - stopping polling');
           }
           clearInterval(pollIntervalRef.current);
+          clearTimeout(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
       } catch {
@@ -883,17 +1053,39 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           console.log('Error in polling, will retry');
         }
         // swallow errors; next poll will retry
+      } finally {
+        // Schedule next poll only after this one finishes, to avoid overlap
+        if (isMountedRef.current && !cancelBackfillRef.current && !stateRef.current.isFinal) {
+          scheduleNextPoll(LIVE_POLL_INTERVAL_MS);
+        }
+        pollingInFlightRef.current = false;
       }
     };
 
     void poll();
-    pollIntervalRef.current = setInterval(poll, LIVE_POLL_INTERVAL_MS);
-  }, [fetchChunk, gameId, maybeStartBackfill, mergeFrames, setFrameState]);
+  }, [fetchChunk, gameId, mergeFrames, setFrameState, startScheduler]);
+
+  // Ensure backfill starts whenever conditions allow, even if forward polling is stopped.
+  // Do not flip hasFirstFrame here; only start if we haven't reached the earliest frame.
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+    if (!isBackfillEnabled) return;
+    if (backfillRunningRef.current || backfillStartedRef.current) return;
+    if (state.orderedTimestamps.length === 0) return;
+    if (state.hasFirstFrame) return;
+
+    // Reset cancel flag in case it was set when backfill was disabled
+    cancelBackfillRef.current = false;
+
+    backfillStartedRef.current = true;
+    void runBackfill();
+  }, [isBackfillEnabled, state.orderedTimestamps.length, state.hasFirstFrame, gameId, runBackfill]);
 
   useEffect(() => {
     // Clean up any existing polling and backoff timers
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
+      clearTimeout(pollIntervalRef.current);
       pollIntervalRef.current = null;
     }
     if (finalStateBackoffRef.current) {
@@ -905,6 +1097,12 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
     backfillRunningRef.current = false;
     backfillStartedRef.current = false;
     backfillCursorRef.current = null;
+    
+    // Cancel any ongoing backfill requests
+    if (backfillAbortControllerRef.current) {
+      backfillAbortControllerRef.current.abort();
+      backfillAbortControllerRef.current = null;
+    }
 
     if (!gameId) {
       backfillStartedRef.current = false;
@@ -920,13 +1118,11 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
 
     const initialize = async () => {
       try {
+        // Initial forward fetch only; do not trigger backfill here
         const { windowFrames, detailFrames, metadata } = await fetchChunk(
           getISODateMultiplyOf10()
         );
-        const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
-        if (mergeResult.hasFramesAfter && isBackfillEnabled) {
-          maybeStartBackfill();
-        }
+        mergeFrames(windowFrames, detailFrames, metadata);
       } catch {
         // ignore errors; live polling will continue attempts
       } finally {
@@ -940,6 +1136,13 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
       cancelBackfillRef.current = true;
       backfillRunningRef.current = false;
       backfillCursorRef.current = null;
+      
+      // Cancel any ongoing backfill requests
+      if (backfillAbortControllerRef.current) {
+        backfillAbortControllerRef.current.abort();
+        backfillAbortControllerRef.current = null;
+      }
+      
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
@@ -949,7 +1152,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         finalStateBackoffRef.current = null;
       }
     };
-  }, [fetchChunk, gameId, maybeStartBackfill, mergeFrames, setFrameState, startLivePolling]);
+  }, [fetchChunk, gameId, mergeFrames, setFrameState, startLivePolling]);
 
   const goLive = useCallback(() => {
     setFrameState((prev) => {

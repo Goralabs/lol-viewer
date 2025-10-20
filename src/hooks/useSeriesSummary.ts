@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { GameDetails } from "../components/LiveStatusGameCard/types/detailsPersistentTypes";
 import { WindowLive } from "../components/LiveStatusGameCard/types/windowLiveTypes";
 import { buildSeriesSummary } from "../utils/seriesUtils";
@@ -22,16 +22,19 @@ export function useSeriesSummary({
     const [windowDataMap, setWindowDataMap] = useState<Map<string, WindowLive>>(new Map());
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const requestedRef = useRef<Set<string>>(new Set());
 
     // Reset cached window data when the event changes so we always refetch fresh frames
     useEffect(() => {
         if (!eventId) {
             setWindowDataMap(new Map());
             setError(null);
+            requestedRef.current.clear();
             return;
         }
         setWindowDataMap(new Map());
         setError(null);
+        requestedRef.current.clear();
     }, [eventId]);
 
     // Fetch window data for completed games to enhance the summary
@@ -78,20 +81,11 @@ export function useSeriesSummary({
 
         // Determine which games still need a final data fetch
         const gamesToFetch = relevantGames.filter(game => {
-            const existing = windowDataMap.get(game.id);
-            const state = (game.state || "").toLowerCase();
-
-            // Always fetch if we have nothing yet
-            if (!existing) {
-                return true;
-            }
-
-            // If the game is completed but we do not have a confirmed final frame, refetch
-            if (COMPLETED_STATES.has(state) && !hasFinalFrame(existing)) {
-                return true;
-            }
-
-            return false;
+            const id = game.id;
+            if (requestedRef.current.has(id)) return false;
+            const existing = windowDataMap.get(id);
+            // Only fetch once per game if we have nothing yet
+            return !existing;
         });
 
         if (gamesToFetch.length === 0) return;
@@ -99,10 +93,11 @@ export function useSeriesSummary({
         setIsLoading(true);
         setError(null);
 
-        // Fetch window data for each completed game
-        Promise.allSettled(
-            gamesToFetch.map(game => fetchWindowData(game.id))
-        ).then(() => {
+        // Mark requested to avoid immediate refetch loops
+        gamesToFetch.forEach(g => requestedRef.current.add(g.id));
+
+        // Fetch window data for each relevant game once
+        Promise.allSettled(gamesToFetch.map(game => fetchWindowData(game.id))).then(() => {
             setIsLoading(false);
         }).catch(err => {
             setError(err instanceof Error ? err.message : "Failed to fetch game data");
