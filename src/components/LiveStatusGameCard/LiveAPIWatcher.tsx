@@ -117,14 +117,14 @@ export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTea
 
         for (let i = 0; i < status.participants.blue.length; i++) {
             if(status.participants.blue[i].kills !== lastFrameWindow.blueTeam.participants[i].kills){
-                createToast(true, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/11.4.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
+                createToast(true, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
                 isPlaying = true
             }
         }
 
         for (let i = 0; i < status.participants.red.length; i++) {
             if(status.participants.red[i].kills !== lastFrameWindow.redTeam.participants[i].kills){
-                createToast(false, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/11.4.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
+                createToast(false, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
                 isPlaying = true
             }
         }
