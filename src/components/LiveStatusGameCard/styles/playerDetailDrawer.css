@@ -1,19 +1,30 @@
+/**
+ * PlayerDetailDrawer Component Styles - UI Redesign Phase 2
+ *
+ * Expandable player details drawer with smooth animations.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * DRAWER CONTAINER
+ * =========================================== */
+
 .player-detail-drawer {
   position: fixed;
   top: 96px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--card-color);
-  border: 1px solid var(--gray-line);
-  border-radius: 8px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-  z-index: 100;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-modal);
   max-width: 600px;
   width: calc(100% - 32px);
   margin: 0;
   max-height: 80vh;
   overflow: hidden;
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown var(--duration-slow) var(--ease-out);
 }
 
 .player-detail-drawer.blue {
@@ -27,55 +38,92 @@
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translate(-50%, -10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
 }
+
+/* ===========================================
+ * DRAWER HEADER
+ * =========================================== */
 
 .drawer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--gray-line);
-  background: var(--background-color);
-  border-radius: 8px 8px 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--background);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .drawer-header h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   color: var(--text);
 }
 
 .close-button {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: var(--text-xl);
   cursor: pointer;
   color: var(--text);
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
 }
 
 .close-button:hover {
-  background-color: var(--gray-line);
+  background-color: var(--hover-bg);
 }
 
+.close-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ===========================================
+ * DRAWER CONTENT
+ * =========================================== */
+
 .drawer-content {
-  padding: 16px;
+  padding: var(--space-md);
   max-height: calc(80vh - 56px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.stats-section, .runes-section, .abilities-section {
-  margin-bottom: 20px;
+/* Scrollbar styling */
+.drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ===========================================
+ * SECTIONS
+ * =========================================== */
+
+.stats-section,
+.runes-section,
+.abilities-section {
+  margin-bottom: var(--space-lg);
 }
 
 .stats-section:last-child,
@@ -87,47 +135,60 @@
 .stats-section h4,
 .runes-section h4,
 .abilities-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0 0 var(--space-sm) 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+/* ===========================================
+ * STATS GRID
+ * =========================================== */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
-  background: var(--background-color);
-  border-radius: 6px;
-  border: 1px solid var(--gray-line);
+  padding: var(--space-xs);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-fast);
+}
+
+.stat-item:hover {
+  transform: scale(1.02);
 }
 
 .stat-label {
-  font-size: 11px;
-  color: var(--text);
-  opacity: 0.7;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stat-value {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
+
+/* ===========================================
+ * RUNES
+ * =========================================== */
 
 .runes-container {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .rune-path {
@@ -137,38 +198,42 @@
 .rune-path-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
 }
 
 .rune-path-icon {
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .rune-path-header span {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   color: var(--text);
 }
 
 .rune-slots {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .rune-icon {
   width: 32px;
   height: 32px;
-  border-radius: 4px;
-  border: 1px solid var(--gray-line);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
+
+/* ===========================================
+ * ABILITIES
+ * =========================================== */
 
 .abilities-sequence {
   display: grid;
   grid-template-columns: repeat(9, minmax(32px, 1fr));
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .ability-square {
@@ -176,12 +241,12 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   color: var(--text);
-  background: var(--background-color);
-  border: 1px solid var(--gray-line);
-  border-radius: 4px;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
 }
 
@@ -189,22 +254,25 @@
   opacity: 0.4;
 }
 
-/* Responsive adjustments */
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
 @media (max-width: 1023px) {
   .player-detail-drawer {
     top: 80px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 8px;
+    gap: var(--space-xs);
   }
-  
+
   .runes-container {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-sm);
   }
-  
+
   .abilities-sequence {
     grid-template-columns: repeat(6, minmax(28px, 1fr));
   }
@@ -217,13 +285,14 @@
   }
 }
 
-/* Tablet-specific adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
   .drawer-content {
-    padding: 12px;
+    padding: var(--space-sm);
   }
-  
-  .stats-section, .runes-section, .abilities-section {
-    margin-bottom: 16px;
+
+  .stats-section,
+  .runes-section,
+  .abilities-section {
+    margin-bottom: var(--space-md);
   }
 }

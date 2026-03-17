@@ -1,194 +1,250 @@
+/**
+ * TeamfightDetector Component Styles - UI Redesign Phase 2
+ *
+ * Teamfight detection with visual feedback.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * CONTAINER
+ * =========================================== */
+
 .teamfight-detector-container {
-    background: var(--card-color);
-    border-radius: 4px;
-    padding: 1rem;
-    margin: 1rem 0;
-    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+  background: var(--card-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+  box-shadow: var(--shadow-card);
 }
+
+/* ===========================================
+ * HEADER
+ * =========================================== */
 
 .teamfight-detector-header {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 1rem;
-    text-align: center;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text);
+  margin-bottom: var(--space-md);
+  text-align: center;
 }
+
+/* ===========================================
+ * EMPTY STATE
+ * =========================================== */
 
 .teamfight-detector-empty {
-    text-align: center;
-    color: var(--text);
-    opacity: 0.6;
-    padding: 2rem 0;
+  text-align: center;
+  color: var(--text);
+  opacity: 0.6;
+  padding: var(--space-xl) 0;
 }
+
+/* ===========================================
+ * TEAMFIGHT LIST
+ * =========================================== */
 
 .teamfight-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
+/* ===========================================
+ * TEAMFIGHT EVENT
+ * =========================================== */
+
 .teamfight-event {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    position: relative;
-    border-left: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+  position: relative;
+  border-left: 3px solid transparent;
 }
 
 .teamfight-event:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--hover-bg);
+  transform: translateX(4px);
+}
+
+.teamfight-event:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .teamfight-event.blue {
-    border-left-color: var(--blue-twitter);
-    background-color: rgba(29, 161, 242, 0.05);
+  border-left-color: var(--blue-twitter);
+  background-color: rgba(29, 161, 242, 0.05);
 }
 
 .teamfight-event.red {
-    border-left-color: var(--red);
-    background-color: rgba(224, 36, 94, 0.05);
+  border-left-color: var(--red);
+  background-color: rgba(224, 36, 94, 0.05);
 }
 
 .teamfight-event.neutral {
-    border-left-color: #FFD700;
-    background-color: rgba(255, 215, 0, 0.05);
+  border-left-color: #FFD700;
+  background-color: rgba(255, 215, 0, 0.05);
 }
 
 .teamfight-event.selected {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-left-width: 4px;
+  background-color: var(--active-bg);
+  border-left-width: 4px;
 }
 
+/* ===========================================
+ * TEAMFIGHT ICON
+ * =========================================== */
+
 .teamfight-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    margin-right: 1rem;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: var(--space-md);
+  background-color: var(--hover-bg);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  transition: transform var(--transition-base) var(--ease-bounce);
+}
+
+.teamfight-event:hover .teamfight-icon {
+  transform: scale(1.1);
 }
 
 .kill-icon {
-    width: 20px;
-    height: 20px;
-    fill: #FFD700;
+  width: 20px;
+  height: 20px;
+  fill: #FFD700;
 }
 
+/* ===========================================
+ * TEAMFIGHT CONTENT
+ * =========================================== */
+
 .teamfight-content {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .teamfight-description {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.25rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text);
+  margin-bottom: var(--space-xs);
 }
 
 .teamfight-details {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-    color: var(--text);
-    opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
 
 .teamfight-time {
-    font-weight: 500;
-    color: var(--blue-twitter);
+  font-weight: var(--font-medium);
+  color: var(--blue-twitter);
+  font-variant-numeric: tabular-nums;
 }
 
 .teamfight-stats {
-    flex: 1;
+  flex: 1;
 }
+
+/* ===========================================
+ * SELECTED INDICATOR
+ * =========================================== */
 
 .teamfight-selected-indicator {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #FFD700;
-    font-size: 1rem;
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #FFD700;
+  font-size: var(--text-lg);
+  animation: pulse var(--duration-slow) infinite;
 }
 
-/* Responsive adjustments */
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
 @media (max-width: 767px) {
-    .teamfight-detector-container {
-        padding: 0.75rem;
-        margin: 0.75rem 0;
-    }
-    
-    .teamfight-detector-header {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .teamfight-event {
-        padding: 0.75rem;
-        gap: 0.75rem;
-    }
-    
-    .teamfight-icon {
-        width: 32px;
-        height: 32px;
-        margin-right: 0.75rem;
-    }
-    
-    .kill-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .teamfight-description {
-        font-size: 0.75rem;
-    }
-    
-    .teamfight-details {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-        font-size: 0.625rem;
-    }
-    
-    .teamfight-selected-indicator {
-        right: 0.75rem;
-    }
+  .teamfight-detector-container {
+    padding: var(--space-sm);
+    margin: var(--space-sm) 0;
+  }
+
+  .teamfight-detector-header {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-sm);
+  }
+
+  .teamfight-event {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .teamfight-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: var(--space-sm);
+  }
+
+  .kill-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .teamfight-description {
+    font-size: var(--text-xs);
+  }
+
+  .teamfight-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: var(--text-xs);
+  }
+
+  .teamfight-selected-indicator {
+    right: var(--space-sm);
+    font-size: var(--text-base);
+  }
 }
 
-/* Tablet adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .teamfight-detector-container {
-        padding: 1rem;
-    }
-    
-    .teamfight-event {
-        padding: 0.875rem;
-    }
-    
-    .teamfight-icon {
-        width: 36px;
-        height: 36px;
-        margin-right: 0.875rem;
-    }
-    
-    .kill-icon {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .teamfight-description {
-        font-size: 0.8125rem;
-    }
-    
-    .teamfight-details {
-        font-size: 0.6875rem;
-    }
+  .teamfight-detector-container {
+    padding: var(--space-md);
+  }
+
+  .teamfight-event {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .teamfight-icon {
+    width: 36px;
+    height: 36px;
+    margin-right: var(--space-sm);
+  }
+
+  .kill-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .teamfight-description {
+    font-size: var(--text-sm);
+  }
+
+  .teamfight-details {
+    font-size: var(--text-xs);
+  }
 }

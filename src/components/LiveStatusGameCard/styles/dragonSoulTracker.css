@@ -1,301 +1,348 @@
+/**
+ * DragonSoulTracker Component Styles - UI Redesign Phase 2
+ *
+ * Dragon soul tracking with improved visuals.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * CONTAINER
+ * =========================================== */
+
 .dragon-soul-tracker-container {
-    background: var(--card-color);
-    border-radius: 4px;
-    padding: 1rem;
-    margin: 1rem 0;
-    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+  background: var(--card-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+  box-shadow: var(--shadow-card);
 }
+
+/* ===========================================
+ * HEADER
+ * =========================================== */
 
 .dragon-soul-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text);
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text);
+  flex-wrap: wrap;
 }
 
+/* ===========================================
+ * SOUL BADGES
+ * =========================================== */
+
 .soul-point-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform var(--transition-fast);
+}
+
+.soul-point-badge:hover {
+  transform: scale(1.05);
 }
 
 .soul-point-badge.blue {
-    background-color: rgba(29, 161, 242, 0.2);
-    color: var(--blue-twitter);
-    border: 1px solid var(--blue-twitter);
+  background-color: rgba(29, 161, 242, 0.15);
+  color: var(--blue-twitter);
+  border: 1px solid rgba(29, 161, 242, 0.4);
 }
 
 .soul-point-badge.red {
-    background-color: rgba(224, 36, 94, 0.2);
-    color: var(--red);
-    border: 1px solid var(--red);
+  background-color: rgba(224, 36, 94, 0.15);
+  color: var(--red);
+  border: 1px solid rgba(224, 36, 94, 0.4);
 }
 
 .soul-winner-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    background: linear-gradient(45deg, #FFD700, #FFA500);
-    color: #000;
-    border: 1px solid #FFD700;
-    animation: soul-pulse 2s infinite;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #000;
+  border: 1px solid #FFD700;
+  animation: soul-pulse 2s infinite;
 }
 
 @keyframes soul-pulse {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-    }
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+  }
 }
 
+/* ===========================================
+ * DRAGON TOTALS
+ * =========================================== */
+
 .dragon-totals {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm);
+  background-color: var(--hover-bg);
+  border-radius: var(--radius-md);
 }
 
 .dragon-total {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
 .dragon-total.blue {
-    color: var(--blue-twitter);
+  color: var(--blue-twitter);
 }
 
 .dragon-total.red {
-    justify-content: flex-end;
-    color: var(--red);
+  justify-content: flex-end;
+  color: var(--red);
 }
 
 .total-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
 
 .total-count {
-    font-size: 1.25rem;
-    font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
 }
 
+/* ===========================================
+ * DRAGON ROWS
+ * =========================================== */
+
 .dragon-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 .dragon-row {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  padding: var(--space-xs) 0;
 }
 
 .dragon-team {
-    flex: 1;
-    display: flex;
-    justify-content: center;
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .dragon-team.blue {
-    justify-content: flex-start;
+  justify-content: flex-start;
 }
 
 .dragon-team.red {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .dragon-count {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
+/* ===========================================
+ * DRAGON SLATES
+ * =========================================== */
+
 .dragon-slate {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.1);
-    position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background-color: var(--hover-bg);
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.dragon-slate:hover {
+  transform: scale(1.1);
 }
 
 .dragon-slate.soul {
-    background: linear-gradient(45deg, #FFD700, #FFA500);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .dragon-slate.elder {
-    background: linear-gradient(45deg, #8A2BE2, #4B0082);
-    box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+  background: linear-gradient(45deg, #8A2BE2, #4B0082);
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
 }
 
 .dragon-icon {
-    width: 20px;
-    height: 20px;
-    filter: brightness(0) invert(1);
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }
 
 .dragon-slate.soul .dragon-icon,
 .dragon-slate.elder .dragon-icon {
-    filter: none;
+  filter: none;
 }
 
 .dragon-more {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text);
-    opacity: 0.7;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-    min-width: 28px;
-    text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text);
+  opacity: 0.7;
+  background-color: var(--hover-bg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-xs);
+  min-width: 28px;
+  text-align: center;
 }
 
+/* ===========================================
+ * DRAGON INFO
+ * =========================================== */
+
 .dragon-info {
-    flex: 0.8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .dragon-type {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 0.25rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text);
+  margin-bottom: var(--space-xs);
 }
 
 .soul-indicator {
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-full);
 }
 
 .soul-indicator.blue {
-    background-color: rgba(29, 161, 242, 0.2);
-    color: var(--blue-twitter);
+  background-color: rgba(29, 161, 242, 0.15);
+  color: var(--blue-twitter);
 }
 
 .soul-indicator.red {
-    background-color: rgba(224, 36, 94, 0.2);
-    color: var(--red);
+  background-color: rgba(224, 36, 94, 0.15);
+  color: var(--red);
 }
 
-/* Responsive adjustments */
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
 @media (max-width: 767px) {
-    .dragon-soul-tracker-container {
-        padding: 0.75rem;
-        margin: 0.75rem 0;
-    }
-    
-    .dragon-soul-header {
-        font-size: 1rem;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .soul-point-badge,
-    .soul-winner-badge {
-        font-size: 0.625rem;
-        padding: 0.2rem 0.5rem;
-    }
-    
-    .dragon-totals {
-        padding: 0.5rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .total-label {
-        font-size: 0.75rem;
-    }
-    
-    .total-count {
-        font-size: 1rem;
-    }
-    
-    .dragon-rows {
-        gap: 0.5rem;
-    }
-    
-    .dragon-row {
-        padding: 0.375rem 0;
-    }
-    
-    .dragon-slate {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .dragon-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .dragon-more {
-        font-size: 0.625rem;
-        min-width: 24px;
-        padding: 0.2rem 0.375rem;
-    }
-    
-    .dragon-info {
-        flex: 0.6;
-    }
-    
-    .dragon-type {
-        font-size: 0.75rem;
-    }
-    
-    .soul-indicator {
-        font-size: 0.5rem;
-        padding: 0.1rem 0.375rem;
-    }
+  .dragon-soul-tracker-container {
+    padding: var(--space-sm);
+    margin: var(--space-sm) 0;
+  }
+
+  .dragon-soul-header {
+    font-size: var(--text-base);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .soul-point-badge,
+  .soul-winner-badge {
+    font-size: var(--text-xs);
+    padding: 2px var(--space-xs);
+  }
+
+  .dragon-totals {
+    padding: var(--space-xs);
+    margin-bottom: var(--space-sm);
+  }
+
+  .total-label {
+    font-size: var(--text-xs);
+  }
+
+  .total-count {
+    font-size: var(--text-lg);
+  }
+
+  .dragon-rows {
+    gap: var(--space-xs);
+  }
+
+  .dragon-row {
+    padding: 2px 0;
+  }
+
+  .dragon-slate {
+    width: 24px;
+    height: 24px;
+  }
+
+  .dragon-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .dragon-more {
+    font-size: var(--text-xs);
+    min-width: 24px;
+    padding: 2px 4px;
+  }
+
+  .dragon-info {
+    flex: 0.6;
+  }
+
+  .dragon-type {
+    font-size: var(--text-xs);
+  }
+
+  .soul-indicator {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
 }
 
-/* Tablet adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .dragon-soul-tracker-container {
-        padding: 1rem;
-    }
-    
-    .dragon-slate {
-        width: 26px;
-        height: 26px;
-    }
-    
-    .dragon-icon {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .dragon-more {
-        min-width: 26px;
-    }
-    
-    .dragon-info {
-        flex: 0.7;
-    }
+  .dragon-soul-tracker-container {
+    padding: var(--space-md);
+  }
+
+  .dragon-slate {
+    width: 26px;
+    height: 26px;
+  }
+
+  .dragon-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dragon-more {
+    min-width: 26px;
+  }
+
+  .dragon-info {
+    flex: 0.7;
+  }
 }

@@ -2,42 +2,182 @@ import { ThemeType } from './ThemeContext'
 import { Theme } from './Theme'
 
 export const THEMES: Record<ThemeType, Theme> = {
-    light: {
-        '--theme-switch-notch': "#2f363d",
-        '--theme-switch-bg': "#FFF",
-        '--logo-color': "#12181B",
-        '--card-color': "#FFF",
-        '--background': "#F2F3F5",
-        '--gray-line': "#DCDDE0",
-        '--text': "#666666",
-        '--text-secondary': "#999999",
-        '--text-highlight': "#B3B9FF",
-        '--title': "#2E384D",
-        '--red': "#E83F5B",
-        '--green': "#4CD62B",
-        '--green-positive': "#61b875",
-        '--blue': "#5965E0",
-        '--blue-dark': "#4953B8",
-        '--blue-twitter': "#2AA9E0",
-        'background': "var(--background)",
-    },
-    dark: {
-        '--theme-switch-notch': "#9E25FC",
-        '--theme-switch-bg': "#6d18b0",
-        '--logo-color': "#FFF",
-        '--card-color': "#12181B",
-        '--background': "#2A2E35",
-        '--gray-line': "#2a2e35",
-        '--text': "#B2BECD",
-        '--text-secondary': "#8A92A0",
-        '--text-highlight': "#B3B9FF",
-        '--title': "#FFF",
-        '--red': "#E83F5B",
-        '--green': "#479335",
-        '--green-positive': "#61b875",
-        '--blue': "#5965E0",
-        '--blue-dark': "#4953B8",
-        '--blue-twitter': "#2AA9E0",
-        'background': "var(--background)",
-    }
+  light: {
+    /* ===========================================
+     * THEME SWITCH COLORS
+     * =========================================== */
+    '--theme-switch-notch': "#2f363d",
+    '--theme-switch-bg': "#FFF",
+
+    /* ===========================================
+     * BRAND & IDENTITY COLORS
+     * =========================================== */
+    '--logo-color': "#12181B",
+
+    /* ===========================================
+     * SURFACE COLORS
+     * =========================================== */
+    '--card-color': "#FFF",
+    '--background': "#F2F3F5",
+    '--gray-line': "#DCDDE0",
+
+    /* ===========================================
+     * TEXT COLORS
+     * =========================================== */
+    '--text': "#666666",
+    '--text-secondary': "#999999",
+    '--text-highlight': "#B3B9FF",
+    '--title': "#2E384D",
+
+    /* ===========================================
+     * SEMANTIC COLORS (Team & Status)
+     * =========================================== */
+    '--red': "#E83F5B",
+    '--green': "#4CD62B",
+    '--green-positive': "#61b875",
+    '--blue': "#5965E0",
+    '--blue-dark': "#4953B8",
+    '--blue-twitter': "#2AA9E0",
+
+    /* ===========================================
+     * EXTENDED SEMANTIC COLORS (New)
+     * =========================================== */
+    '--success': "#22C55E",
+    '--warning': "#F59E0B",
+    '--error': "#EF4444",
+    '--info': "#3B82F6",
+
+    /* ===========================================
+     * SKELETON COLORS (New)
+     * =========================================== */
+    '--skeleton-base': "rgba(128, 128, 128, 0.1)",
+    '--skeleton-highlight': "rgba(128, 128, 128, 0.2)",
+
+    /* ===========================================
+     * BORDER COLORS (New)
+     * =========================================== */
+    '--border-color': "#E5E7EB",
+    '--border-color-hover': "#D1D5DB",
+
+    /* ===========================================
+     * OVERLAY COLORS (New)
+     * =========================================== */
+    '--overlay-light': "rgba(255, 255, 255, 0.8)",
+    '--overlay-dark': "rgba(0, 0, 0, 0.5)",
+
+    /* ===========================================
+     * SHADOW COLORS (New)
+     * =========================================== */
+    '--shadow-color': "rgba(0, 0, 0, 0.1)",
+
+    /* ===========================================
+     * INTERACTIVE COLORS (New)
+     * =========================================== */
+    '--hover-bg': "rgba(0, 0, 0, 0.04)",
+    '--active-bg': "rgba(0, 0, 0, 0.08)",
+    '--disabled-bg': "#F3F4F6",
+    '--disabled-text': "#9CA3AF",
+
+    /* ===========================================
+     * GRADIENT COLORS (New)
+     * =========================================== */
+    '--gradient-blue-start': "#2AA9E0",
+    '--gradient-blue-end': "#1E88C9",
+    '--gradient-red-start': "#E83F5B",
+    '--gradient-red-end': "#C9354A",
+
+    /* ===========================================
+     * LEGACY (for backward compatibility)
+     * =========================================== */
+    'background': "var(--background)",
+  },
+  dark: {
+    /* ===========================================
+     * THEME SWITCH COLORS
+     * =========================================== */
+    '--theme-switch-notch': "#9E25FC",
+    '--theme-switch-bg': "#6d18b0",
+
+    /* ===========================================
+     * BRAND & IDENTITY COLORS
+     * =========================================== */
+    '--logo-color': "#FFF",
+
+    /* ===========================================
+     * SURFACE COLORS
+     * =========================================== */
+    '--card-color': "#12181B",
+    '--background': "#2A2E35",
+    '--gray-line': "#2a2e35",
+
+    /* ===========================================
+     * TEXT COLORS
+     * =========================================== */
+    '--text': "#B2BECD",
+    '--text-secondary': "#8A92A0",
+    '--text-highlight': "#B3B9FF",
+    '--title': "#FFF",
+
+    /* ===========================================
+     * SEMANTIC COLORS (Team & Status)
+     * =========================================== */
+    '--red': "#E83F5B",
+    '--green': "#479335",
+    '--green-positive': "#61b875",
+    '--blue': "#5965E0",
+    '--blue-dark': "#4953B8",
+    '--blue-twitter': "#2AA9E0",
+
+    /* ===========================================
+     * EXTENDED SEMANTIC COLORS (New)
+     * =========================================== */
+    '--success': "#22C55E",
+    '--warning': "#F59E0B",
+    '--error': "#EF4444",
+    '--info': "#3B82F6",
+
+    /* ===========================================
+     * SKELETON COLORS (New)
+     * =========================================== */
+    '--skeleton-base': "rgba(255, 255, 255, 0.08)",
+    '--skeleton-highlight': "rgba(255, 255, 255, 0.15)",
+
+    /* ===========================================
+     * BORDER COLORS (New)
+     * =========================================== */
+    '--border-color': "#374151",
+    '--border-color-hover': "#4B5563",
+
+    /* ===========================================
+     * OVERLAY COLORS (New)
+     * =========================================== */
+    '--overlay-light': "rgba(255, 255, 255, 0.1)",
+    '--overlay-dark': "rgba(0, 0, 0, 0.7)",
+
+    /* ===========================================
+     * SHADOW COLORS (New)
+     * =========================================== */
+    '--shadow-color': "rgba(0, 0, 0, 0.3)",
+
+    /* ===========================================
+     * INTERACTIVE COLORS (New)
+     * =========================================== */
+    '--hover-bg': "rgba(255, 255, 255, 0.08)",
+    '--active-bg': "rgba(255, 255, 255, 0.12)",
+    '--disabled-bg': "#1F2937",
+    '--disabled-text': "#6B7280",
+
+    /* ===========================================
+     * GRADIENT COLORS (New)
+     * =========================================== */
+    '--gradient-blue-start': "#2AA9E0",
+    '--gradient-blue-end': "#1E88C9",
+    '--gradient-red-start': "#E83F5B",
+    '--gradient-red-end': "#C9354A",
+
+    /* ===========================================
+     * LEGACY (for backward compatibility)
+     * =========================================== */
+    'background': "var(--background)",
+  }
 }

@@ -1,115 +1,235 @@
+/**
+ * LiveGameCard Component Styles - UI Redesign Phase 2
+ *
+ * Game cards with improved hover interactions and visual hierarchy.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * CARD BASE STYLES
+ * =========================================== */
+
 .live-game-card {
-    width: 25rem;
-    padding: 0.5rem;
-    text-align: center;
-    background: var(--card-color);
-    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
-    border-radius: 5px;
-    transition: all .2s ease-in-out;
+  width: 25rem;
+  padding: var(--space-sm);
+  text-align: center;
+  background: var(--card-color);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  transition:
+    transform var(--transition-base) var(--ease-smooth),
+    box-shadow var(--transition-base) var(--ease-smooth);
 }
 
 .live-game-card > h3 {
-    padding: 0.2rem 0;
-    color: var(--text);
+  padding: var(--space-xs) 0;
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.live-game-card-content{
-    display: flex;
-    justify-content: center;
+/* ===========================================
+ * CARD CONTENT
+ * =========================================== */
+
+.live-game-card-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .live-game-card-content > h1 {
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-    color: var(--text);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
 }
 
-.live-game-card:hover {
-    transform: scale(1.05);
+/* ===========================================
+ * TEAM SECTION
+ * =========================================== */
+
+.live-game-card-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
 .live-game-card-team-image {
-    width: 4rem;
-    height: 4rem;
+  width: 4rem;
+  height: 4rem;
 
-    border-radius: 5px;
-    margin: 1rem 3rem;
-    padding: 0.30rem;
-    box-shadow: inset 0 1px 3px 1px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) var(--space-xl);
+  padding: var(--space-xs);
+  box-shadow: inset 0 1px 3px 1px var(--shadow-color);
 
-    background: var(--background);
+  background: var(--background);
+  transition: transform var(--transition-base) var(--ease-smooth);
 }
 
 .live-game-card-title {
-    font-weight: 500;
-    color: var(--text);
+  font-weight: var(--font-medium);
+  color: var(--text);
+  font-size: var(--text-sm);
 }
+
+/* ===========================================
+ * TIME DISPLAY
+ * =========================================== */
 
 .live-game-card-time {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-align: center;
+  margin-top: var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-align: center;
 }
 
-.empty-games-list-container{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* ===========================================
+ * HOVER INTERACTIONS
+ * =========================================== */
+
+.live-game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
 }
 
-.empty-games-galaxy{
-    margin: 1.25rem 0;
-    width: 40%;
+.live-game-card:hover .live-game-card-team-image {
+  transform: scale(1.05);
 }
+
+/* Focus state for keyboard navigation */
+a:focus-visible .live-game-card {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ===========================================
+ * GAMES LIST CONTAINER
+ * =========================================== */
 
 .games-list-container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .games-list-items {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 25rem);
-    grid-gap: 2rem;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 25rem);
+  grid-gap: var(--space-xl);
+  justify-content: center;
+  align-items: center;
 }
 
+/* ===========================================
+ * GAMES SEPARATOR
+ * =========================================== */
+
 .games-separator {
-    margin: 2rem 0;
-    border-bottom: 1px solid var(--text);
-    width: 100%;
-    height: 3px;
+  margin: var(--space-xl) 0;
+  border-bottom: 1px solid var(--text);
+  opacity: 0.3;
+  width: 100%;
+  height: 1px;
 }
 
 .games-of-day {
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===========================================
+ * EMPTY STATES
+ * =========================================== */
+
+.empty-games-list-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-games-galaxy {
+  margin: var(--space-lg) 0;
+  width: 40%;
 }
 
 /* Compact inline empty state to avoid large gaps */
 .empty-games-inline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
-    color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  color: var(--text);
 }
 
 .empty-games-inline-icon {
-    width: 1.5rem;
-    height: auto;
-    opacity: 0.9;
+  width: var(--icon-lg);
+  height: auto;
+  opacity: 0.9;
 }
 
 .empty-games-inline-text {
-    font-weight: 600;
+  font-weight: var(--font-semibold);
+}
+
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
+@media (max-width: 1080px) {
+  .games-list-items {
+    grid-gap: var(--space-lg);
+  }
+}
+
+@media (max-width: 720px) {
+  .live-game-card {
+    width: 100%;
+    max-width: 25rem;
+    padding: var(--space-sm);
+  }
+
+  .live-game-card-team-image {
+    width: 3rem;
+    height: 3rem;
+    margin: var(--space-sm) var(--space-md);
+  }
+
+  .live-game-card-content > h1 {
+    font-size: var(--text-base);
+    padding: 0 var(--space-sm);
+  }
+
+  .games-list-items {
+    grid-template-columns: 1fr;
+    grid-gap: var(--space-md);
+    padding: 0 var(--space-sm);
+  }
+
+  .games-separator {
+    margin: var(--space-lg) 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .live-game-card-team-image {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: var(--space-sm);
+  }
+
+  .live-game-card-title {
+    font-size: var(--text-xs);
+  }
 }

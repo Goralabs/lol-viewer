@@ -1,0 +1,236 @@
+/**
+ * Pill Component Styles
+ *
+ * A badge/tag component for displaying status, labels, or short information.
+ * Uses design tokens for consistent styling.
+ */
+
+.pill {
+  /* Base styles */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* ===========================================
+ * SIZE VARIANTS
+ * =========================================== */
+
+.pill--sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+}
+
+.pill--md {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+}
+
+.pill--lg {
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--text-base);
+  line-height: var(--leading-none);
+}
+
+/* ===========================================
+ * ICON STYLES
+ * =========================================== */
+
+.pill__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill__icon svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.pill--sm .pill__icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+/* ===========================================
+ * COLOR VARIANTS - FILLED (default)
+ * =========================================== */
+
+/* Default: Neutral gray */
+.pill--default {
+  background-color: var(--gray-line);
+  color: var(--text);
+}
+
+/* Primary: Blue accent */
+.pill--primary {
+  background-color: var(--blue);
+  color: #FFF;
+}
+
+/* Success: Green for positive states */
+.pill--success {
+  background-color: var(--green);
+  color: #FFF;
+}
+
+/* Warning: Yellow/orange for warnings */
+.pill--warning {
+  background-color: #F59E0B;
+  color: #1F2937;
+}
+
+/* Danger: Red for errors or critical states */
+.pill--danger {
+  background-color: var(--red);
+  color: #FFF;
+}
+
+/* Info: Light blue for information */
+.pill--info {
+  background-color: var(--blue-twitter);
+  color: #FFF;
+}
+
+/* Blue Team: LoL specific */
+.pill--blue-team {
+  background-color: var(--blue-twitter);
+  color: #FFF;
+}
+
+/* Red Team: LoL specific */
+.pill--red-team {
+  background-color: var(--red);
+  color: #FFF;
+}
+
+/* Live: Animated live indicator */
+.pill--live {
+  background-color: #DC2626;
+  color: #FFF;
+  animation: livePulse 2s infinite;
+}
+
+.pill--live::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: currentColor;
+  margin-right: var(--space-xs);
+  animation: liveDot 1.5s infinite;
+}
+
+/* Neutral: Muted appearance */
+.pill--neutral {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--gray-line);
+}
+
+/* ===========================================
+ * OUTLINED VARIANTS
+ * =========================================== */
+
+.pill--outlined.pill--default {
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--gray-line);
+}
+
+.pill--outlined.pill--primary {
+  background-color: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+
+.pill--outlined.pill--success {
+  background-color: transparent;
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+
+.pill--outlined.pill--warning {
+  background-color: transparent;
+  color: #F59E0B;
+  border: 1px solid #F59E0B;
+}
+
+.pill--outlined.pill--danger {
+  background-color: transparent;
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.pill--outlined.pill--info {
+  background-color: transparent;
+  color: var(--blue-twitter);
+  border: 1px solid var(--blue-twitter);
+}
+
+.pill--outlined.pill--blue-team {
+  background-color: transparent;
+  color: var(--blue-twitter);
+  border: 1px solid var(--blue-twitter);
+}
+
+.pill--outlined.pill--red-team {
+  background-color: transparent;
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+.pill--outlined.pill--live {
+  background-color: transparent;
+  color: #DC2626;
+  border: 1px solid #DC2626;
+  animation: none;
+}
+
+.pill--outlined.pill--live::before {
+  background-color: #DC2626;
+}
+
+/* ===========================================
+ * INTERACTIVE STATE
+ * =========================================== */
+
+.pill--interactive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pill--interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pill--interactive:active {
+  transform: translateY(0);
+}
+
+/* ===========================================
+ * FOCUS STATE (Accessibility)
+ * =========================================== */
+
+.pill--interactive:focus {
+  outline: none;
+}
+
+.pill--interactive:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}

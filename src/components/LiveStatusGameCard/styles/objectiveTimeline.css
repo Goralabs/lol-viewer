@@ -1,211 +1,235 @@
+/**
+ * ObjectiveTimeline Component Styles - UI Redesign Phase 2
+ *
+ * Timeline of game objectives with improved icons and interactions.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * CONTAINER
+ * =========================================== */
+
 .objective-timeline-container {
-    background: var(--card-color);
-    border-radius: 4px;
-    padding: 1rem;
-    margin: 1rem 0;
-    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
+  background: var(--card-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+  box-shadow: var(--shadow-card);
+  width: 100%;
 }
+
+/* ===========================================
+ * HEADER
+ * =========================================== */
 
 .timeline-header {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 1rem;
-    text-align: center;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--title);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
-.timeline-empty {
-    text-align: center;
-    color: var(--text);
-    opacity: 0.6;
-    padding: 2rem 0;
+.timeline-header svg {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  fill: var(--text-secondary);
 }
+
+/* ===========================================
+ * EVENTS LIST
+ * =========================================== */
 
 .timeline-events {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
 }
 
 .timeline-event {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    position: relative;
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  background: var(--background);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--gray-line);
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    border-color var(--transition-fast);
+  animation: fadeInLeft var(--duration-base) var(--ease-out) forwards;
+  opacity: 0;
 }
+
+/* Staggered entrance for timeline events */
+.timeline-event:nth-child(1) { animation-delay: 50ms; }
+.timeline-event:nth-child(2) { animation-delay: 100ms; }
+.timeline-event:nth-child(3) { animation-delay: 150ms; }
+.timeline-event:nth-child(4) { animation-delay: 200ms; }
+.timeline-event:nth-child(5) { animation-delay: 250ms; }
+.timeline-event:nth-child(6) { animation-delay: 300ms; }
+.timeline-event:nth-child(7) { animation-delay: 350ms; }
+.timeline-event:nth-child(8) { animation-delay: 400ms; }
+.timeline-event:nth-child(9) { animation-delay: 450ms; }
+.timeline-event:nth-child(10) { animation-delay: 500ms; }
 
 .timeline-event:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+  background: var(--hover-bg);
+  transform: translateX(4px);
 }
 
-.timeline-event.blue {
-    border-left: 3px solid var(--blue-twitter);
+.timeline-event.blue-team-event {
+  border-left-color: var(--blue-twitter);
 }
 
-.timeline-event.red {
-    border-left: 3px solid var(--red);
+.timeline-event.red-team-event {
+  border-left-color: var(--red);
 }
 
-.timeline-event.neutral {
-    border-left: 3px solid #FFD700;
+.timeline-event.neutral-event {
+  border-left-color: var(--text-secondary);
 }
 
-.timeline-event.firstBlood {
-    background-color: rgba(255, 215, 0, 0.1);
-}
-
-.timeline-event.firstTower {
-    background-color: rgba(100, 149, 237, 0.1);
-}
-
-.timeline-event.firstDragon {
-    background-color: rgba(255, 140, 0, 0.1);
-}
-
-.timeline-event.baron {
-    background-color: rgba(138, 43, 226, 0.1);
-}
-
-.timeline-event.inhibitor {
-    background-color: rgba(255, 69, 0, 0.1);
-}
-
-.timeline-event.teamfight {
-    background-color: rgba(255, 215, 0, 0.08);
-}
+/* ===========================================
+ * EVENT TIME
+ * =========================================== */
 
 .event-time {
-    font-size: 0.875rem;
-    color: var(--text);
-    opacity: 0.7;
-    min-width: 50px;
-    font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  min-width: 50px;
+  font-variant-numeric: tabular-nums;
 }
 
+/* ===========================================
+ * EVENT ICON
+ * =========================================== */
+
 .event-icon-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin: 0 0.75rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 var(--space-sm);
 }
 
 .event-icon {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
 
-.timeline-event.blue .event-icon {
-    fill: var(--blue-twitter);
+.event-icon.blue-team-icon {
+  fill: var(--blue-twitter);
 }
 
-.timeline-event.red .event-icon {
-    fill: var(--red);
+.event-icon.red-team-icon {
+  fill: var(--red);
 }
 
-.timeline-event.neutral .event-icon,
-.timeline-event.teamfight .event-icon {
-    fill: #FFD700;
+.event-icon.neutral-icon {
+  fill: var(--text-secondary);
 }
 
-.timeline-event.firstBlood .event-icon {
-    fill: #FFD700;
-}
-
-.timeline-event.baron .event-icon {
-    fill: #8A2BE2;
-}
-
-.timeline-event.inhibitor .event-icon {
-    fill: #FF4500;
-}
+/* ===========================================
+ * EVENT DESCRIPTION
+ * =========================================== */
 
 .event-description {
-    flex: 1;
-    font-size: 0.875rem;
-    color: var(--text);
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text);
 }
 
-.event-selected-indicator {
-    position: absolute;
-    right: 0.75rem;
-    color: #FFD700;
-    font-size: 1rem;
+.event-description .team-name {
+  font-weight: var(--font-semibold);
 }
 
-/* Scrollbar styling */
+.event-description .team-name.blue-team {
+  color: var(--blue-twitter);
+}
+
+.event-description .team-name.red-team {
+  color: var(--red);
+}
+
+/* ===========================================
+ * SCROLLBAR STYLING
+ * =========================================== */
+
 .timeline-events::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
 
 .timeline-events::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+  background: transparent;
+  border-radius: var(--radius-sm);
 }
 
 .timeline-events::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
 }
 
 .timeline-events::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+  background: var(--text-secondary);
 }
 
-/* Responsive adjustments */
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
 @media (max-width: 767px) {
-    .objective-timeline-container {
-        padding: 0.75rem;
-        margin: 0.75rem 0;
-    }
-    
-    .timeline-header {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .timeline-event {
-        padding: 0.5rem;
-        margin-bottom: 0.375rem;
-    }
-    
-    .event-time {
-        font-size: 0.75rem;
-        min-width: 45px;
-    }
-    
-    .event-icon-container {
-        width: 20px;
-        height: 20px;
-        margin: 0 0.5rem;
-    }
-    
-    .event-icon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .event-description {
-        font-size: 0.75rem;
-    }
-    
-    .timeline-events {
-        max-height: 300px;
-    }
+  .objective-timeline-container {
+    padding: var(--space-sm);
+    margin: var(--space-sm) 0;
+  }
+
+  .timeline-header {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-sm);
+  }
+
+  .timeline-event {
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-xs);
+  }
+
+  .event-time {
+    font-size: 10px;
+    min-width: 45px;
+  }
+
+  .event-icon-container {
+    width: 20px;
+    height: 20px;
+    margin: 0 var(--space-xs);
+  }
+
+  .event-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .event-description {
+    font-size: var(--text-xs);
+  }
+
+  .timeline-events {
+    max-height: 300px;
+  }
 }
 
-/* Tablet adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .objective-timeline-container {
-        padding: 1rem;
-    }
-    
-    .timeline-events {
-        max-height: 350px;
-    }
+  .objective-timeline-container {
+    padding: var(--space-md);
+  }
+
+  .timeline-events {
+    max-height: 350px;
+  }
 }

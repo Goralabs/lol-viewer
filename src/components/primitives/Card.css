@@ -1,0 +1,105 @@
+/**
+ * Card Component Styles
+ *
+ * A foundational surface component for containing content.
+ * Uses design tokens for consistent styling.
+ */
+
+.card {
+  /* Base styles */
+  background-color: var(--card-color);
+  border-radius: var(--radius-lg);
+  position: relative;
+  transition:
+    transform var(--transition-transform),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+/* ===========================================
+ * PADDING VARIANTS
+ * =========================================== */
+
+.card--padding-none {
+  padding: var(--space-0);
+}
+
+.card--padding-sm {
+  padding: var(--space-sm);
+}
+
+.card--padding-md {
+  padding: var(--space-md);
+}
+
+.card--padding-lg {
+  padding: var(--space-lg);
+}
+
+/* ===========================================
+ * VISUAL VARIANTS
+ * =========================================== */
+
+/* Default: Subtle shadow for standard content */
+.card--default {
+  box-shadow: var(--shadow-card);
+}
+
+/* Elevated: More prominent shadow for emphasis */
+.card--elevated {
+  box-shadow: var(--shadow-md);
+}
+
+/* Interactive: Hover effects for clickable cards */
+.card--interactive {
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+}
+
+.card--interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card--interactive:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===========================================
+ * CLICKABLE STATE (when onClick is provided)
+ * =========================================== */
+
+.card--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.card--clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card--clickable:active {
+  transform: translateY(-2px);
+}
+
+/* ===========================================
+ * FOCUS STATE (Accessibility)
+ * =========================================== */
+
+.card--clickable:focus {
+  outline: none;
+}
+
+.card--clickable:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ===========================================
+ * THEME ADJUSTMENTS
+ * =========================================== */
+
+/* Ensure card works in both light and dark modes */
+/* Theme colors are provided by Themes.ts via CSS variables */

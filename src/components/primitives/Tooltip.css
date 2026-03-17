@@ -1,0 +1,159 @@
+/**
+ * Tooltip Component Styles
+ *
+ * Accessible tooltip with positioning and animations.
+ * Uses design tokens for consistent styling.
+ */
+
+.tooltip-trigger {
+  display: inline-block;
+  position: relative;
+}
+
+/* ===========================================
+ * TOOLTIP BASE STYLES
+ * =========================================== */
+
+.tooltip {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.tooltip--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===========================================
+ * TOOLTIP CONTENT
+ * =========================================== */
+
+.tooltip__content {
+  background-color: var(--title);
+  color: var(--card-color);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-tight);
+  max-width: 250px;
+  word-wrap: break-word;
+  box-shadow: var(--shadow-lg);
+  white-space: normal;
+}
+
+/* Dark mode tooltip */
+[data-theme="dark"] .tooltip__content {
+  background-color: var(--card-color);
+  color: var(--text);
+  border: 1px solid var(--border-color);
+}
+
+/* ===========================================
+ * TOOLTIP ARROW
+ * =========================================== */
+
+.tooltip__arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: inherit;
+  transform: rotate(45deg);
+}
+
+/* Arrow positioning based on tooltip position */
+.tooltip--top .tooltip__arrow {
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+  background-color: var(--title);
+}
+
+.tooltip--bottom .tooltip__arrow {
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+  background-color: var(--title);
+}
+
+.tooltip--left .tooltip__arrow {
+  right: -4px;
+  top: 50%;
+  margin-top: -4px;
+  background-color: var(--title);
+}
+
+.tooltip--right .tooltip__arrow {
+  left: -4px;
+  top: 50%;
+  margin-top: -4px;
+  background-color: var(--title);
+}
+
+/* Dark mode arrow */
+[data-theme="dark"] .tooltip--top .tooltip__arrow,
+[data-theme="dark"] .tooltip--bottom .tooltip__arrow,
+[data-theme="dark"] .tooltip--left .tooltip__arrow,
+[data-theme="dark"] .tooltip--right .tooltip__arrow {
+  background-color: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-left: none;
+}
+
+[data-theme="dark"] .tooltip--bottom .tooltip__arrow {
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-left: none;
+}
+
+[data-theme="dark"] .tooltip--left .tooltip__arrow {
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-right: none;
+}
+
+[data-theme="dark"] .tooltip--right .tooltip__arrow {
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-left: none;
+}
+
+/* ===========================================
+ * ANIMATION VARIANTS
+ * =========================================== */
+
+.tooltip--top {
+  transform-origin: bottom center;
+}
+
+.tooltip--bottom {
+  transform-origin: top center;
+}
+
+.tooltip--left {
+  transform-origin: right center;
+}
+
+.tooltip--right {
+  transform-origin: left center;
+}
+
+/* ===========================================
+ * ACCESSIBILITY
+ * =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+
+  .tooltip--visible {
+    transform: none;
+  }
+}

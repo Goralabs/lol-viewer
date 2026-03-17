@@ -1,41 +1,60 @@
-/* Mobile Simple Player Table Styles */
+/**
+ * PlayerTableSimple Component Styles - UI Redesign Phase 2
+ *
+ * Mobile-friendly simple player table.
+ * Uses design tokens for consistent styling.
+ */
 
-/* Container for the simple player table */
+/* ===========================================
+ * CONTAINER
+ * =========================================== */
+
 .simple-player-table-container {
   width: 100%;
   overflow-x: hidden;
 }
 
-/* Simple player table layout */
 .simple-player-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-/* Simple player row */
+/* ===========================================
+ * PLAYER ROW
+ * =========================================== */
+
 .simple-player-row {
-  border-bottom: 1px solid var(--gray-line);
-  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--space-sm) 0;
+  transition: background-color var(--transition-fast);
 }
 
 .simple-player-row:last-child {
   border-bottom: none;
 }
 
-/* Player info section with champion and name */
+.simple-player-row:hover {
+  background-color: var(--hover-bg);
+}
+
+/* ===========================================
+ * PLAYER INFO
+ * =========================================== */
+
 .simple-player-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
 }
 
 .simple-player-champion {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--gray-line);
   position: relative;
+  flex-shrink: 0;
 }
 
 .simple-player-level {
@@ -43,15 +62,15 @@
   bottom: -8px;
   right: -8px;
   background: var(--card-color);
-  border: 1px solid var(--gray-line);
-  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
   width: 20px;
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text);
   box-shadow: 0 0 0 1px var(--card-color);
 }
@@ -62,8 +81,8 @@
 }
 
 .simple-player-name {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -71,17 +90,19 @@
 }
 
 .simple-player-champion-name {
-  font-size: 12px;
-  color: var(--text);
-  opacity: 0.7;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
 
-/* Player stats section */
+/* ===========================================
+ * PLAYER STATS
+ * =========================================== */
+
 .simple-player-stats {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-xs);
 }
 
 .simple-player-hp {
@@ -92,87 +113,103 @@
 .simple-player-kda {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 14px;
-  font-weight: 500;
+  gap: 2px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color: var(--text);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .simple-player-gold {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color: var(--text);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Health bar for simple layout */
+/* ===========================================
+ * HEALTH BAR
+ * =========================================== */
+
 .simple-health-bar {
   width: 100%;
   height: 8px;
   background: var(--gray-line);
-  border-radius: 4px;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .simple-health-bar-fill {
   height: 100%;
-  background: var(--green);
-  transition: width 1s;
+  background: linear-gradient(90deg, var(--green) 0%, #22C55E 100%);
+  transition: width var(--duration-slow) var(--ease-smooth);
 }
 
-/* Team headers for simple layout */
+/* ===========================================
+ * TEAM HEADER
+ * =========================================== */
+
 .simple-team-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 0;
-  border-bottom: 2px solid var(--gray-line);
-  margin-bottom: 0.5rem;
+  padding: var(--space-sm) 0;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: var(--space-xs);
 }
 
 .simple-team-name {
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
   color: var(--text);
 }
 
 .simple-team-stats {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 14px;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
   color: var(--text);
 }
 
 .simple-team-stat {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 2px;
 }
 
-/* Toggle button for mobile */
+/* ===========================================
+ * TOGGLE BUTTON
+ * =========================================== */
+
 .simple-table-toggle {
   display: flex;
   justify-content: center;
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
 }
 
 .toggle-button {
   background: var(--card-color);
-  border: 1px solid var(--gray-line);
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-size: 14px;
-  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color: var(--text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .toggle-button:hover {
-  background: var(--gray-line);
+  background: var(--hover-bg);
+}
+
+.toggle-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .toggle-button.active {
@@ -181,36 +218,10 @@
   border-color: var(--blue-twitter);
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
-  .simple-player-info {
-    gap: 0.5rem;
-  }
-  
-  .simple-player-champion {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .simple-player-name {
-    font-size: 13px;
-  }
-  
-  .simple-player-champion-name {
-    font-size: 11px;
-  }
-  
-  .simple-player-stats {
-    gap: 0.25rem;
-  }
-  
-  .simple-player-kda,
-  .simple-player-gold {
-    font-size: 13px;
-  }
-}
+/* ===========================================
+ * ANIMATIONS
+ * =========================================== */
 
-/* Animation for switching between simple and detailed */
 .simple-to-detailed-enter {
   opacity: 0;
   transform: translateY(10px);
@@ -219,7 +230,9 @@
 .simple-to-detailed-enter-active {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
 }
 
 .simple-to-detailed-exit {
@@ -230,5 +243,39 @@
 .simple-to-detailed-exit-active {
   opacity: 0;
   transform: translateY(-10px);
-  transition: opacity 300ms, transform 300ms;
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
+@media (max-width: 480px) {
+  .simple-player-info {
+    gap: var(--space-xs);
+  }
+
+  .simple-player-champion {
+    width: 36px;
+    height: 36px;
+  }
+
+  .simple-player-name {
+    font-size: 13px;
+  }
+
+  .simple-player-champion-name {
+    font-size: 11px;
+  }
+
+  .simple-player-stats {
+    gap: 2px;
+  }
+
+  .simple-player-kda,
+  .simple-player-gold {
+    font-size: 13px;
+  }
 }

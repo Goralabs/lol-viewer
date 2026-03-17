@@ -1,537 +1,724 @@
+/**
+ * PlayersTable Component Styles - UI Redesign Phase 2
+ *
+ * Player stats table with improved visual hierarchy and interactions.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * MINI HEALTH BAR
+ * =========================================== */
+
 .mini-health-bar {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .mini-health-bar > div {
-    flex: 1;
-    border-radius: 4px;
-    min-width: 5rem;
-    background: var(--gray-line);
-    position: relative;
+  flex: 1;
+  border-radius: var(--radius-sm);
+  min-width: 5rem;
+  background: var(--gray-line);
+  position: relative;
+  overflow: hidden;
 }
 
 .mini-health-bar > div > div {
-    height: 28px;
-    border-radius: 4px;
-    transition: width 1s;
-    background: var(--green);
+  height: 28px;
+  border-radius: var(--radius-sm);
+  transition: width var(--duration-slow) var(--ease-smooth);
+  background: linear-gradient(90deg, var(--green) 0%, #22C55E 100%);
 }
 
 span.mini-current-health {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 12px;
-    font-weight: 400;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  color: var(--card-color);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/*
- HEADER IMAGES
-*/
+/* ===========================================
+ * HEADER IMAGES
+ * =========================================== */
 
 .live-game-stats-header-team-images {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .live-game-stats-header-team-images > .live-game-stats-header-status-text {
-    flex: 1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
 .live-game-stats-header-status-text > h1,
 .live-game-stats-header-status-text > h3 {
-    margin: 0;
+  margin: 0;
+}
+
+.live-game-stats-header-status-text > h1 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
 }
 
 .live-game-stats-header-status-text > h3 {
-    font-weight: 500;
-    font-size: 1rem;
+  font-weight: var(--font-medium);
+  font-size: var(--text-base);
+  color: var(--text);
 }
 
 .live-game-stats-header-team-images > h3 {
-    flex: 1;
-    text-align: center;
+  flex: 1;
+  text-align: center;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-lg);
+  color: var(--text);
 }
 
-.live-game-stats-header-team-images > .blue-team {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-
-    width: 4rem;
-    height: 4rem;
-
-    border-radius: 5px;
-    padding: 0.30rem;
-
-    filter: drop-shadow(0px 0px 0px #222);
-
-}
-
+.live-game-stats-header-team-images > .blue-team,
 .live-game-stats-header-team-images > .red-team {
-    display: flex;
-    flex: 1;
-    flex-direction: row-reverse;
-    justify-content: center;
-    text-align: right;
+  display: flex;
+  justify-content: center;
 
-    width: 4rem;
-    height: 4rem;
+  width: 4rem;
+  height: 4rem;
 
-    border-radius: 5px;
-    padding: 0.30rem;
-    filter: drop-shadow(0px 0px 0px #222);
+  border-radius: var(--radius-md);
+  padding: var(--space-xs);
+
+  filter: drop-shadow(0 2px 4px var(--shadow-color));
+  transition: transform var(--transition-base) var(--ease-smooth);
 }
 
-/*
- HEADER STATUS
-*/
+.live-game-stats-header-team-images > .blue-team img,
+.live-game-stats-header-team-images > .red-team img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ===========================================
+ * HEADER STATUS
+ * =========================================== */
 
 .live-game-stats-header-status {
-    margin-top: 1.5rem;
-    display: flex;
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-lg);
 }
 
-.live-game-stats-header-status > .blue-team > .team-stats > svg > path {
-    fill: var(--blue-twitter);
-}
-
+.live-game-stats-header-status > .blue-team > .team-stats > svg > path,
 .live-game-stats-header-status > .blue-team > .team-stats > svg > g {
-    fill: var(--blue-twitter);
+  fill: var(--blue-twitter);
 }
 
-.live-game-stats-header-status > .red-team > .team-stats > svg > path {
-    fill: var(--red);
-}
-
+.live-game-stats-header-status > .red-team > .team-stats > svg > path,
 .live-game-stats-header-status > .red-team > .team-stats > svg > g {
-    fill: var(--red);
+  fill: var(--red);
 }
 
 .live-game-stats-header-status > .blue-team {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    margin-right: 15rem;
-}
-
-@media(max-width: 1080px) {
-    .live-game-stats-header-status > .blue-team {
-        margin-right: 10rem;
-    }
-}
-
-@media(max-width: 720px) {
-    .live-game-stats-header-status > .blue-team {
-        margin-right: 1rem;
-    }
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
 }
 
 .live-game-stats-header-status > .red-team {
-    display: flex;
-    flex: 1;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-    text-align: right;
+  display: flex;
+  flex: 1;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  text-align: right;
 }
 
 .team-stats {
-    color: var(--text);
-    display: inline-block;
-    text-align: center;
-    width: 24px;
+  color: var(--text);
+  display: inline-flex;
+  flex-direction: column;
+  text-align: center;
+  width: 28px;
+  gap: 2px;
 }
 
 .team-stats > span {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
 }
 
-/*
-Gold bar
-*/
+.team-stats svg {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+/* ===========================================
+ * GOLD BAR
+ * =========================================== */
 
 .live-game-stats-header-gold {
-    margin: 1rem 0;
-    display: flex;
+  margin: var(--space-md) 0;
+  display: flex;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .live-game-stats-header-gold > .blue-team {
-    border-bottom: 4px solid var(--blue-twitter);
+  border-bottom: 4px solid var(--blue-twitter);
+  transition: flex var(--duration-slow) var(--ease-smooth);
 }
 
 .live-game-stats-header-gold > .red-team {
-    border-bottom: 4px solid var(--red);
+  border-bottom: 4px solid var(--red);
+  transition: flex var(--duration-slow) var(--ease-smooth);
 }
 
+/* ===========================================
+ * WIN PROBABILITY
+ * =========================================== */
+
 .win-probability-text {
-    display: flex;
-    justify-content: center;
-    align-items: baseline;
-    gap: 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text);
-    margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-top: var(--space-sm);
 }
 
 .win-probability-text-blue {
-    color: var(--blue-twitter);
+  color: var(--blue-twitter);
 }
 
 .win-probability-text-red {
-    color: var(--red);
+  color: var(--red);
 }
 
 .win-probability-text-label {
-    opacity: 0.65;
+  opacity: 0.65;
 }
 
-/*
-Status dragons
-*/
-.live-game-stats-header-dragons{
-    display: flex;
-    min-height: 24px;
+/* ===========================================
+ * DRAGONS
+ * =========================================== */
+
+.live-game-stats-header-dragons {
+  display: flex;
+  min-height: 24px;
 }
 
 .live-game-stats-header-dragons > .blue-team {
-    flex: 1;
+  flex: 1;
 }
 
 .live-game-stats-header-dragons > .red-team {
-    text-align: right;
-    flex: 1;
+  text-align: right;
+  flex: 1;
 }
 
 .blue-team > .dragon {
-    margin-right: 0.75rem;
+  margin-right: var(--space-sm);
 }
 
 .red-team > .dragon {
-    margin-left: 0.75rem;
+  margin-left: var(--space-sm);
 }
 
-/*
- PLAYER
-*/
+.dragon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+/* ===========================================
+ * CARD CONTAINER
+ * =========================================== */
 
 .status-live-game-card {
-    background: var(--card-color);
-    box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.4);
-    border-radius: 4px;
+  background: var(--card-color);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  animation: fadeInUp var(--duration-slow) var(--ease-out);
 }
 
 .status-live-game-card-content {
-    margin: 1.5rem 1.5rem;
-    overflow-x: auto;
+  margin: var(--space-lg);
+  overflow-x: auto;
 }
 
-/* Responsive adjustments for mobile */
-@media (max-width: 767px) {
-    .status-live-game-card-content {
-        margin: 1rem 0.75rem;
-        overflow-x: hidden;
-    }
-    
-    .live-game-stats-header-team-images {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .live-game-stats-header-team-images > h3 {
-        font-size: 0.875rem;
-    }
-    
-    .live-game-stats-header-status > .blue-team {
-        margin-right: 0.5rem;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .live-game-stats-header-status > .red-team {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .team-stats {
-        width: 20px;
-        font-size: 0.75rem;
-    }
-    
-    .win-probability-text {
-        font-size: 0.625rem;
-        gap: 0.5rem;
-    }
-    
-    .live-game-stats-header-gold {
-        margin: 0.5rem 0;
-    }
-    
-    .live-game-stats-header-dragons {
-        min-height: 20px;
-    }
-    
-    .blue-team > .dragon,
-    .red-team > .dragon {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .blue-team > .dragon {
-        margin-right: 0.5rem;
-    }
-    
-    .red-team > .dragon {
-        margin-left: 0.5rem;
-    }
+/* Entrance animation for table rows */
+.status-live-game-card-table tbody tr {
+  animation: fadeInUp var(--duration-base) var(--ease-out) forwards;
+  opacity: 0;
 }
 
-/* Tablet adjustments */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .status-live-game-card-content {
-        margin: 1.25rem 1.25rem;
-    }
-    
-    .live-game-stats-header-status > .blue-team {
-        margin-right: 5rem;
-    }
-}
+.status-live-game-card-table tbody tr:nth-child(1) { animation-delay: 50ms; }
+.status-live-game-card-table tbody tr:nth-child(2) { animation-delay: 100ms; }
+.status-live-game-card-table tbody tr:nth-child(3) { animation-delay: 150ms; }
+.status-live-game-card-table tbody tr:nth-child(4) { animation-delay: 200ms; }
+.status-live-game-card-table tbody tr:nth-child(5) { animation-delay: 250ms; }
+
+/* ===========================================
+ * TABLE STYLES
+ * =========================================== */
 
 .status-live-game-card-table {
-    width: 100%;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-md);
 }
 
-.player-champion-info {
-    text-align: left;
-    display: flex;
-    align-items: center;
+.status-live-game-card-table th,
+.status-live-game-card-table td {
+  padding: var(--space-xs);
+  vertical-align: middle;
 }
 
-.player-champion-info-level{
-    position: absolute;
-    transform: translate(-50%, 100%);
-    font-size: 12px;
+.status-live-game-card-table thead th {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-sm);
 }
 
-.player-champion-info-name {
-    margin-left: 0.5rem;
-    display: flex;
-    flex-direction: column;
+.table-top-row-champion {
+  width: 12rem;
+  min-width: 8rem;
+  max-width: 14rem;
+  text-align: left;
 }
 
-.player-card-player-name {
-    font-size: 10px;
-}
-
-.player-champion {
-    width: 32px;
-    border-radius: 50%;
-    background: var(--gray-line);
-}
-
-.player-stats{
-    color: var(--text)
-}
-
-.table-top-row-champion{
-    width: 12rem;
-}
-
-.table-top-row-vida{
-    height: 28px;
-    width: 15rem;
+.table-top-row-vida {
+  height: 28px;
+  width: 15rem;
+  min-width: 10rem;
 }
 
 .table-top-row-items {
-    height: 28px;
-    width: 12rem;
+  height: 28px;
+  width: 12rem;
+  min-width: 8rem;
 }
 
 .table-top-row {
-    height: 28px;
+  height: 28px;
 }
 
+/* ===========================================
+ * PLAYER CHAMPION INFO
+ * =========================================== */
+
+.player-champion-info {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.player-champion-info-level {
+  position: absolute;
+  transform: translate(-50%, 100%);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--card-color);
+  background: var(--text);
+  border-radius: var(--radius-full);
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-champion-info-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-champion-info-name > span:first-child {
+  font-weight: var(--font-medium);
+  color: var(--text);
+}
+
+.player-card-player-name {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.player-champion {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--gray-line);
+  position: relative;
+}
+
+/* ===========================================
+ * PLAYER STATS CELLS
+ * =========================================== */
+
 .player-stats {
-    /*width: 64px;*/
-    height: 28px;
-    line-height: 28px;
-    font-size: 12px;
-    font-weight: 400;
-    background: var(--gray-line);
-    text-align: center;
-    border-radius: 3px;
+  color: var(--text);
+  height: 28px;
+  line-height: 28px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  background: var(--gray-line);
+  text-align: center;
+  border-radius: var(--radius-sm);
 }
 
 .player-stats-kda {
-    width: 28px;
+  width: 28px;
 }
 
-/*
-
- */
-
 .player-stats-items {
-    height: 28px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: var(--gray-line);
-    border-radius: 4px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  background: var(--gray-line);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-xs);
 }
 
 .player-stats-item {
-    flex: 1;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.player-stats-item  > img {
-    height: 26px;
-    border-radius: 4px;
+.player-stats-item > img {
+  height: 26px;
+  width: 26px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
 }
 
-/*
-
- */
+/* ===========================================
+ * GOLD DIFFERENCE
+ * =========================================== */
 
 .player-gold-positive {
-    color: var(--green-positive);
-    font-weight: 500;
+  color: var(--green-positive);
+  font-weight: var(--font-medium);
 }
 
 .player-gold-negative {
-    color: var(--red);
-    font-weight: 500;
+  color: var(--red);
+  font-weight: var(--font-medium);
 }
+
+/* ===========================================
+ * LOADING STATE
+ * =========================================== */
 
 .loading-game-container {
-    display: flex;
-    width: 100%;
-    height: 60vh;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  width: 100%;
+  height: 60vh;
+  justify-content: center;
+  align-items: center;
 }
 
-.loading-game-image{
-    width: 20%;
+.loading-game-image {
+  width: 20%;
 }
 
-/*
-    Game selector (series)
-*/
+/* ===========================================
+ * GAME SELECTOR (Series)
+ * =========================================== */
+
 .game-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0 0 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-md) 0;
 }
 
 .game-selector-button {
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    border: 1px solid var(--gray-line);
-    background: var(--card-color);
-    color: var(--text);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--card-color);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 .game-selector-button:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.game-selector-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .game-selector-button.selected {
-    background: var(--blue-twitter);
-    color: #fff;
-    border-color: var(--blue-twitter);
+  background: var(--blue-twitter);
+  color: #fff;
+  border-color: var(--blue-twitter);
 }
 
-/*
-    Toast LiveAPIWatcher
-*/
+/* ===========================================
+ * TOAST LIVEAPI WATCHER
+ * =========================================== */
 
 .toast-watcher {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .toast-image {
-    display: flex;
-
-    width: 2rem;
-    height: 2rem;
-
-    margin-right: 1rem;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  margin-right: var(--space-md);
 }
 
-/*
-    Player Detail Drawer Styles
-*/
+/* ===========================================
+ * PLAYER ROW INTERACTIONS
+ * =========================================== */
+
 .player-row {
-    cursor: pointer;
-    transition: background-color 0.2s;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
 }
 
 .player-row:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--hover-bg);
 }
 
 .player-row:focus {
-    outline: 2px solid var(--blue-twitter);
-    outline-offset: -2px;
+  outline: none;
+}
+
+.player-row:focus-visible {
+  outline: 2px solid var(--blue-twitter);
+  outline-offset: -2px;
 }
 
 .player-row.expanded {
-    background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--active-bg);
 }
 
 .drawer-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
-    opacity: 0.6;
-    transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--space-xs);
+  opacity: 0.6;
+  transition: opacity var(--transition-fast), transform var(--transition-base);
 }
 
 .player-row:hover .drawer-trigger {
-    opacity: 1;
+  opacity: 1;
 }
 
 .player-row.expanded .drawer-trigger-icon {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .drawer-trigger-icon {
-    font-size: 12px;
-    color: var(--text);
-    transition: transform 0.2s;
+  font-size: var(--text-xs);
+  color: var(--text);
+  transition: transform var(--transition-base) var(--ease-smooth);
 }
 
-/* Position the drawer relative to the table */
-.status-live-game-card-table {
+/* ===========================================
+ * SIMPLE TABLE TOGGLE (Mobile)
+ * =========================================== */
+
+.simple-table-toggle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.toggle-button {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: var(--card-color);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-button:hover {
+  background: var(--hover-bg);
+}
+
+.toggle-button.active {
+  background: var(--blue-twitter);
+  color: #fff;
+  border-color: var(--blue-twitter);
+}
+
+.toggle-button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
+/* Mobile */
+@media (max-width: 767px) {
+  .status-live-game-card-content {
+    margin: var(--space-md) var(--space-sm);
+    overflow-x: auto;
+  }
+
+  .live-game-stats-header-team-images {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .live-game-stats-header-team-images > h3 {
+    font-size: var(--text-sm);
+  }
+
+  .live-game-stats-header-status {
+    margin-top: var(--space-md);
+  }
+
+  .live-game-stats-header-status > .blue-team {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .live-game-stats-header-status > .red-team {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .team-stats {
+    width: 24px;
+    font-size: var(--text-xs);
+  }
+
+  .team-stats svg {
+    width: var(--icon-sm);
+    height: var(--icon-sm);
+  }
+
+  .win-probability-text {
+    font-size: var(--text-xs);
+    gap: var(--space-xs);
+  }
+
+  .live-game-stats-header-gold {
+    margin: var(--space-sm) 0;
+  }
+
+  .live-game-stats-header-dragons {
+    min-height: 20px;
+  }
+
+  .blue-team > .dragon,
+  .red-team > .dragon {
+    width: var(--icon-sm);
+    height: var(--icon-sm);
+  }
+
+  .blue-team > .dragon {
+    margin-right: var(--space-xs);
+  }
+
+  .red-team > .dragon {
+    margin-left: var(--space-xs);
+  }
+
+  /* Mobile table adjustments */
+  .table-top-row-champion {
+    width: 9rem;
+    min-width: 7rem;
+  }
+
+  .table-top-row-vida {
+    width: 10rem;
+    min-width: 8rem;
+  }
+
+  .table-top-row-items {
+    width: 9rem;
+    min-width: 7rem;
+  }
+
+  .player-champion-info-name > span:first-child {
+    font-size: var(--text-xs);
+  }
+
+  /* Scroll indicator for mobile tables */
+  .status-live-game-card-table-wrapper {
     position: relative;
+  }
+
+  .status-live-game-card-table-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, var(--card-color));
+    pointer-events: none;
+  }
 }
 
-/* Tablet-specific adjustments for drawer trigger */
+/* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .drawer-trigger {
-        margin-left: 4px;
-    }
-    
-    .drawer-trigger-icon {
-        font-size: 10px;
-    }
+  .status-live-game-card-content {
+    margin: var(--space-md);
+  }
+
+  .live-game-stats-header-status {
+    gap: var(--space-md);
+  }
+
+  .drawer-trigger {
+    margin-left: 4px;
+  }
+
+  .drawer-trigger-icon {
+    font-size: 10px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .live-game-stats-header-status {
+    gap: var(--space-xl);
+  }
+}
+
+@media (min-width: 1280px) {
+  .live-game-stats-header-status {
+    gap: 15rem;
+  }
 }

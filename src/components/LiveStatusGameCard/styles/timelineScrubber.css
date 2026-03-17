@@ -1,29 +1,55 @@
+/**
+ * TimelineScrubber Component Styles - UI Redesign Phase 2
+ *
+ * Timeline navigation with smooth interactions.
+ * Uses design tokens for consistent styling.
+ */
+
+/* ===========================================
+ * TIMELINE CONTAINER
+ * =========================================== */
+
 .timeline-scrubber {
-  margin: 10px 0;
-  padding: 10px;
+  margin: var(--space-sm) 0;
+  padding: var(--space-sm);
   background: var(--card-color);
-  border-radius: 5px;
-  border: 1px solid var(--gray-line);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
+
+/* ===========================================
+ * TIMELINE CONTROLS
+ * =========================================== */
 
 .timeline-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-sm);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-sm);
 }
+
+/* ===========================================
+ * BUTTONS
+ * =========================================== */
 
 .timeline-live-button {
   background-color: var(--blue-twitter);
   color: #fff;
   border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+}
+
+.timeline-live-button:hover:not(:disabled) {
+  background-color: var(--blue);
+  transform: translateY(-1px);
 }
 
 .timeline-live-button:focus-visible,
@@ -32,10 +58,6 @@
 .timeline-speed-menu button:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
-}
-
-.timeline-live-button:hover:not(:disabled) {
-  background-color: var(--blue);
 }
 
 .timeline-live-button.active {
@@ -47,80 +69,15 @@
   cursor: not-allowed;
 }
 
-.timeline-status {
-  color: var(--text-secondary);
-  font-size: 0.9em;
-  font-style: italic;
-}
-
-.timeline-status-warning {
-  color: var(--red);
-  font-weight: bold;
-}
-
-.timeline-slider-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.timeline-time {
-  color: var(--text);
-  font-weight: bold;
-  min-width: 50px;
-  text-align: center;
-}
-
-.timeline-slider {
-  flex: 1;
-  height: 5px;
-  border-radius: 5px;
-  background: var(--gray-line);
-  outline: none;
-  cursor: pointer;
-}
-
-.timeline-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--blue-twitter);
-  cursor: pointer;
-}
-
-.timeline-slider::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--blue-twitter);
-  cursor: pointer;
-  border: none;
-}
-
-.timeline-slider:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.timeline-slider:disabled::-webkit-slider-thumb {
-  cursor: not-allowed;
-}
-
-.timeline-slider:disabled::-moz-range-thumb {
-  cursor: not-allowed;
-}
-
-/* Live playback controls */
 .timeline-pause-button {
   background-color: var(--blue-twitter);
   color: #fff;
   border: none;
-  padding: 5px 8px;
-  border-radius: 3px;
+  padding: var(--space-xs) var(--space-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
 }
 
 .timeline-pause-button:hover:not(:disabled) {
@@ -136,6 +93,98 @@
   cursor: not-allowed;
 }
 
+/* ===========================================
+ * TIMELINE STATUS
+ * =========================================== */
+
+.timeline-status {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.timeline-status-warning {
+  color: var(--red);
+  font-weight: var(--font-semibold);
+}
+
+/* ===========================================
+ * TIMELINE SLIDER
+ * =========================================== */
+
+.timeline-slider-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.timeline-time {
+  color: var(--text);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  min-width: 50px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-slider {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--gray-line);
+  outline: none;
+  cursor: pointer;
+  transition: height var(--transition-fast);
+}
+
+.timeline-slider:hover {
+  height: 12px;
+}
+
+/* Slider thumb - minimum 44px touch target */
+.timeline-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--blue-twitter);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  /* Use box-shadow to create visual indicator while maintaining touch target */
+  box-shadow: 0 0 0 3px var(--card-color), 0 0 0 5px var(--blue-twitter);
+}
+
+.timeline-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.timeline-slider::-moz-range-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--blue-twitter);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 3px var(--card-color), 0 0 0 5px var(--blue-twitter);
+}
+
+.timeline-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timeline-slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.timeline-slider:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+}
+
+/* ===========================================
+ * SPEED CONTROLS
+ * =========================================== */
+
 .timeline-speed-container {
   position: relative;
 }
@@ -144,11 +193,11 @@
   background-color: var(--blue-twitter);
   color: #fff;
   border: none;
-  padding: 5px 8px;
-  border-radius: 3px;
+  padding: var(--space-xs) var(--space-xs);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.2s;
+  font-size: var(--text-xs);
+  transition: all var(--transition-fast);
 }
 
 .timeline-speed-button:hover:not(:disabled) {
@@ -165,27 +214,29 @@
   top: 100%;
   left: 0;
   background: var(--card-color);
-  border: 1px solid var(--gray-line);
-  border-radius: 3px;
-  z-index: 10;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   min-width: 120px;
+  overflow: hidden;
 }
 
 .timeline-speed-menu button {
-  padding: 5px 10px;
+  padding: var(--space-xs) var(--space-sm);
   background-color: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
   color: var(--text);
-  transition: background-color 0.2s;
+  font-size: var(--text-sm);
+  transition: background-color var(--transition-fast);
 }
 
 .timeline-speed-menu button:hover {
-  background: var(--background);
+  background: var(--hover-bg);
 }
 
 .timeline-speed-menu button.active {
@@ -193,12 +244,60 @@
   color: #ffffff;
 }
 
+/* ===========================================
+ * BUFFER / MANUAL INFO
+ * =========================================== */
+
 .timeline-buffer-info {
   color: var(--blue-twitter);
-  font-weight: bold;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
 }
 
 .timeline-manual-info {
   color: var(--blue);
-  font-weight: bold;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+/* ===========================================
+ * RESPONSIVE ADJUSTMENTS
+ * =========================================== */
+
+@media (max-width: 767px) {
+  .timeline-scrubber {
+    padding: var(--space-xs);
+    margin: var(--space-xs) 0;
+  }
+
+  .timeline-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+  }
+
+  .timeline-live-button,
+  .timeline-pause-button,
+  .timeline-speed-button {
+    padding: var(--space-xs);
+    font-size: var(--text-xs);
+  }
+
+  .timeline-slider-container {
+    flex-wrap: wrap;
+  }
+
+  .timeline-time {
+    font-size: var(--text-xs);
+    min-width: 40px;
+  }
+
+  .timeline-speed-menu {
+    min-width: 100px;
+  }
+
+  .timeline-speed-menu button {
+    font-size: var(--text-xs);
+    padding: 4px var(--space-xs);
+  }
 }
