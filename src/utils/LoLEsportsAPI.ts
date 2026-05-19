@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export const ITEMS_URL = "https://ddragon.leagueoflegends.com/cdn/15.20.1/img/item/"
+export const ITEMS_URL = "https://ddragon.leagueoflegends.com/cdn/16.10.1/img/item/"
 //export const ITEMS_URL = "https://ddragon.bangingheads.net/cdn/latest/img/item/"
 //export const CHAMPIONS_URL = "https://ddragon.bangingheads.net/cdn/latest/img/champion/"
-export const CHAMPIONS_URL = "https://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/"
+export const CHAMPIONS_URL = "https://ddragon.leagueoflegends.com/cdn/16.10.1/img/champion/"
 
 const API_URL_PERSISTED = "https://esports-api.lolesports.com/persisted/gw"
 const API_URL_LIVE = "https://feed.lolesports.com/livestats/v1"
@@ -112,13 +112,13 @@ export function getGameDetails(gameId: string) {
 export function getISODateMultiplyOf10() {
     const date = new Date();
     date.setMilliseconds(0);
-  
+
     if (date.getSeconds() % 10 !== 0) {
-      date.setSeconds(date.getSeconds() - (date.getSeconds() % 10));
+        date.setSeconds(date.getSeconds() - (date.getSeconds() % 10));
     }
-  
+
     date.setSeconds(date.getSeconds() - 60);
-  
+
     // Ensure the ISO string has .000Z at the end
     const isoString = date.toISOString();
     return isoString.replace(/\.\d+Z$/, '.000Z');

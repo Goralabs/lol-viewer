@@ -1,11 +1,11 @@
 import './styles/playerStatusStyle.css'
 
-import {GameMetadata, Participant} from "./types/windowLiveTypes";
+import { GameMetadata, Participant } from "./types/windowLiveTypes";
 
-import {useEffect, useState} from "react";
-import {ToastContainer, toast} from 'react-toastify';
-import {Frame as FrameWindow} from "./types/windowLiveTypes";
-import {Team} from "./types/detailsPersistentTypes";
+import { useEffect, useState } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import { Frame as FrameWindow } from "./types/windowLiveTypes";
+import { Team } from "./types/detailsPersistentTypes";
 import { safeGetItem } from "../../utils/safeStorage";
 
 // Import audio assets via ESM for Vite compatibility
@@ -50,13 +50,13 @@ type StatusWatcher = {
     }
 }
 
-export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTeam, isLive = true } : Props) {
+export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTeam, isLive = true }: Props) {
     const [status, setStatus] = useState<StatusWatcher>({
-        dragons: {blue: lastFrameWindow.blueTeam.dragons.length, red: lastFrameWindow.redTeam.dragons.length},
-        inhibitors: {blue: lastFrameWindow.blueTeam.inhibitors, red: lastFrameWindow.redTeam.inhibitors},
-        towers: {blue: lastFrameWindow.blueTeam.towers, red: lastFrameWindow.redTeam.towers},
-        barons: {blue: lastFrameWindow.blueTeam.barons, red: lastFrameWindow.redTeam.barons},
-        participants: {blue: lastFrameWindow.blueTeam.participants, red: lastFrameWindow.redTeam.participants}
+        dragons: { blue: lastFrameWindow.blueTeam.dragons.length, red: lastFrameWindow.redTeam.dragons.length },
+        inhibitors: { blue: lastFrameWindow.blueTeam.inhibitors, red: lastFrameWindow.redTeam.inhibitors },
+        towers: { blue: lastFrameWindow.blueTeam.towers, red: lastFrameWindow.redTeam.towers },
+        barons: { blue: lastFrameWindow.blueTeam.barons, red: lastFrameWindow.redTeam.barons },
+        participants: { blue: lastFrameWindow.blueTeam.participants, red: lastFrameWindow.redTeam.participants }
     })
 
     useEffect(() => {
@@ -65,10 +65,10 @@ export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTea
 
         const soundData = safeGetItem("sound");
         let isMuted = false;
-        if(soundData) {
+        if (soundData) {
             if (soundData === "mute") {
                 isMuted = true;
-            }else if(soundData === "unmute"){
+            } else if (soundData === "unmute") {
                 isMuted = false;
             }
         }
@@ -76,89 +76,89 @@ export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTea
         // Topo = prioridade para o som
         let isPlaying = isMuted;
 
-        if(status.inhibitors.blue !== lastFrameWindow.blueTeam.inhibitors){
+        if (status.inhibitors.blue !== lastFrameWindow.blueTeam.inhibitors) {
             createToast(true, isPlaying, inib_red, "Destroyed an inhibitor", blueTeam.image);
             isPlaying = true
         }
 
-        if(status.inhibitors.red !== lastFrameWindow.redTeam.inhibitors){
+        if (status.inhibitors.red !== lastFrameWindow.redTeam.inhibitors) {
             createToast(false, isPlaying, inib_blue, "Destroyed an inhibitor", redTeam.image);
             isPlaying = true
         }
 
-        if(status.barons.blue !== lastFrameWindow.blueTeam.barons){
+        if (status.barons.blue !== lastFrameWindow.blueTeam.barons) {
             createToast(true, isPlaying, baron_blue, "Baron taken", blueTeam.image);
             isPlaying = true
         }
 
-        if(status.barons.red !== lastFrameWindow.redTeam.barons){
+        if (status.barons.red !== lastFrameWindow.redTeam.barons) {
             createToast(false, isPlaying, baron_red, "Baron taken", redTeam.image);
             isPlaying = true
         }
 
-        if(status.dragons.blue !== lastFrameWindow.blueTeam.dragons.length){
+        if (status.dragons.blue !== lastFrameWindow.blueTeam.dragons.length) {
             createToast(true, isPlaying, dragon_blue, "Dragon taken", blueTeam.image);
             isPlaying = true
         }
 
-        if(status.dragons.red !== lastFrameWindow.redTeam.dragons.length){
+        if (status.dragons.red !== lastFrameWindow.redTeam.dragons.length) {
             createToast(false, isPlaying, dragon_red, "Dragon taken", redTeam.image);
             isPlaying = true
         }
 
-        if(status.towers.blue !== lastFrameWindow.blueTeam.towers){
+        if (status.towers.blue !== lastFrameWindow.blueTeam.towers) {
             createToast(true, isPlaying, tower_red, "Destroyed a tower", blueTeam.image);
             isPlaying = true
         }
 
-        if(status.towers.red !== lastFrameWindow.redTeam.towers){
+        if (status.towers.red !== lastFrameWindow.redTeam.towers) {
             createToast(false, isPlaying, tower_blue, "Destroyed a tower", redTeam.image);
             isPlaying = true
         }
 
         for (let i = 0; i < status.participants.blue.length; i++) {
-            if(status.participants.blue[i].kills !== lastFrameWindow.blueTeam.participants[i].kills){
-                createToast(true, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
+            if (status.participants.blue[i].kills !== lastFrameWindow.blueTeam.participants[i].kills) {
+                createToast(true, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/16.10.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
                 isPlaying = true
             }
         }
 
         for (let i = 0; i < status.participants.red.length; i++) {
-            if(status.participants.red[i].kills !== lastFrameWindow.redTeam.participants[i].kills){
-                createToast(false, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
+            if (status.participants.red[i].kills !== lastFrameWindow.redTeam.participants[i].kills) {
+                createToast(false, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/16.10.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
                 isPlaying = true
             }
         }
 
         setStatus({
-            dragons: {blue: lastFrameWindow.blueTeam.dragons.length, red: lastFrameWindow.redTeam.dragons.length},
-            inhibitors: {blue: lastFrameWindow.blueTeam.inhibitors, red: lastFrameWindow.redTeam.inhibitors},
-            towers: {blue: lastFrameWindow.blueTeam.towers, red: lastFrameWindow.redTeam.towers},
-            barons: {blue: lastFrameWindow.blueTeam.barons, red: lastFrameWindow.redTeam.barons},
-            participants: {blue: lastFrameWindow.blueTeam.participants, red: lastFrameWindow.redTeam.participants},
+            dragons: { blue: lastFrameWindow.blueTeam.dragons.length, red: lastFrameWindow.redTeam.dragons.length },
+            inhibitors: { blue: lastFrameWindow.blueTeam.inhibitors, red: lastFrameWindow.redTeam.inhibitors },
+            towers: { blue: lastFrameWindow.blueTeam.towers, red: lastFrameWindow.redTeam.towers },
+            barons: { blue: lastFrameWindow.blueTeam.barons, red: lastFrameWindow.redTeam.barons },
+            participants: { blue: lastFrameWindow.blueTeam.participants, red: lastFrameWindow.redTeam.participants },
         })
     }, [lastFrameWindow.blueTeam.totalKills, lastFrameWindow.blueTeam.dragons.length, lastFrameWindow.blueTeam.inhibitors, lastFrameWindow.redTeam.totalKills, lastFrameWindow.redTeam.dragons.length, lastFrameWindow.redTeam.inhibitors, status.dragons.blue, status.dragons.red, status.barons.blue, status.barons.red, status.inhibitors.blue, status.inhibitors.red, status.towers.blue, status.towers.red, status.participants.blue, status.participants.red, lastFrameWindow.blueTeam.barons, lastFrameWindow.blueTeam.towers, lastFrameWindow.blueTeam.participants, lastFrameWindow.redTeam.barons, lastFrameWindow.redTeam.towers, lastFrameWindow.redTeam.participants, gameMetadata.blueTeamMetadata.participantMetadata, gameMetadata.redTeamMetadata.participantMetadata, blueTeam.image, redTeam.image, isLive]);
 
     return (
-        <ToastContainer/>
+        <ToastContainer />
     );
 }
 
 function createToast(blueTeam: boolean, soundIsPlaying: boolean, sound: string, message: string, image: string) {
-    if(!soundIsPlaying) {
+    if (!soundIsPlaying) {
         let audio = new Audio(sound);
         audio.load();
         audio.volume = 0.20;
         audio.play();
     }
 
-    if(blueTeam){
+    if (blueTeam) {
         toast.info(
             <div className="toast-watcher">
                 <div className="toast-image">
-                    <img src={image} alt="blue team"/>
+                    <img src={image} alt="blue team" />
                 </div>
-                <h4 style={{color: "#FFF"}}>{message}</h4>
+                <h4 style={{ color: "#FFF" }}>{message}</h4>
             </div>
             , {
                 pauseOnFocusLoss: false,
@@ -167,11 +167,11 @@ function createToast(blueTeam: boolean, soundIsPlaying: boolean, sound: string, 
                 progressStyle: { background: '#FFF' }
             }
         )
-    }else{
+    } else {
         toast.error(
             <div className="toast-watcher">
-                <img className="toast-image" src={image} alt="red team"/>
-                <h4 style={{color: "#FFF"}}>{message}</h4>
+                <img className="toast-image" src={image} alt="red team" />
+                <h4 style={{ color: "#FFF" }}>{message}</h4>
             </div>
             , {
                 pauseOnFocusLoss: false,
