@@ -8,7 +8,7 @@ type Props = {
 export function LiveGameCard({ game }: Props) {
     return (
         <Link to={`live/${game.id}`}>
-            <div className="live-game-card">
+            <div className="live-game-card is-live">
                 <h3>{game.league.name}</h3>
 
                 <div className="live-game-card-content">

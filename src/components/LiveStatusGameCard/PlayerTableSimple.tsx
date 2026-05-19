@@ -84,7 +84,7 @@ export function PlayerTableSimple({
 
   const renderTeamHeader = (team: any, teamSide: 'blue' | 'red') => {
     return (
-      <div className="simple-team-header">
+      <div className={`simple-team-header ${teamSide}`}>
         <div className="simple-team-name">{team.name.toUpperCase()}</div>
       </div>
     );

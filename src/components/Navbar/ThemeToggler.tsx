@@ -1,32 +1,36 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import './styles/navbarStyle.css'
 
 import { useTheme } from "../../theme/ThemeContext";
+import { safeGetItem, safeSetItem } from "../../utils/safeStorage";
 
 export function ThemeToggler() {
     const { setCurrentTheme} = useTheme();
-    const [toggled, setToggled] = useState(false);
+    const [toggled, setToggled] = useState(() => {
+        const themeData = safeGetItem("theme");
+        return themeData ? themeData === "dark" : true;
+    });
 
     useEffect(() => {
-        const themeData = localStorage.getItem("theme");
+        const themeData = safeGetItem("theme");
         if(themeData) {
             if (themeData === "light") {
                 setCurrentTheme("light");
-                setToggled(false);
             } else {
                 setCurrentTheme("dark");
-                setToggled(true)
             }
+        } else {
+            setCurrentTheme("dark");
         }
-    });
+    }, [setCurrentTheme]);
 
     const handleClick = () => {
         if(toggled) {
             setCurrentTheme("light");
-            localStorage.setItem("theme", "light");
+            safeSetItem("theme", "light");
         }else{
             setCurrentTheme("dark");
-            localStorage.setItem("theme", "dark");
+            safeSetItem("theme", "dark");
         }
 
         setToggled((s) => !s);

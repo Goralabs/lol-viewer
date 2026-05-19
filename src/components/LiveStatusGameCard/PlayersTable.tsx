@@ -29,14 +29,20 @@ import { CHAMPIONS_URL } from '../../utils/LoLEsportsAPI';
 import { useResponsive } from '../../hooks/useResponsive';
 import { PlayerTableSimple } from './PlayerTableSimple';
 import { PlayerDetailDrawer } from './PlayerDetailDrawer';
+import { GoldGraph } from './GoldGraph';
+import { ObjectiveTimeline } from './ObjectiveTimeline';
 
 type Props = {
     lastFrameWindow: FrameWindow,
     lastFrameDetails: FrameDetails,
     gameMetadata: GameMetadata,
     gameDetails: GameDetails,
-    isLive?: boolean, // Add isLive prop to control notifications
-    isFinal?: boolean, // Add isFinal prop to indicate if the game is finished
+    isLive?: boolean,
+    isFinal?: boolean,
+    windowFrames?: FrameWindow[],
+    selectedTimestamp?: number | null,
+    onTimestampClick?: (timestamp: number) => void,
+    hasFullTimeline?: boolean,
 }
 
 enum GameState {
@@ -45,9 +51,21 @@ enum GameState {
     finished = "FINISHED"
 }
 
-export function PlayersTable({ lastFrameWindow, lastFrameDetails, gameMetadata, gameDetails, isLive = true, isFinal = false } : Props) {
+export function PlayersTable({
+    lastFrameWindow,
+    lastFrameDetails,
+    gameMetadata,
+    gameDetails,
+    isLive = true,
+    isFinal = false,
+    windowFrames = [],
+    selectedTimestamp = null,
+    onTimestampClick,
+    hasFullTimeline = false
+} : Props) {
     const [gameState, setGameState] = useState<GameState>(GameState[lastFrameWindow.gameState as keyof typeof GameState]);
     const [useSimpleView, setUseSimpleView] = useState(false);
+    const [activeTab, setActiveTab] = useState<'stats' | 'charts'>('stats');
     const [expandedPlayer, setExpandedPlayer] = useState<{ participantId: number, teamSide: 'blue' | 'red' } | null>(null);
     const { isMobile } = useResponsive();
 
@@ -136,16 +154,7 @@ export function PlayersTable({ lastFrameWindow, lastFrameDetails, gameMetadata, 
         <div className="status-live-game-card">
 
             {/* Toggle button for mobile/tablet users */}
-            {isMobile && (
-                <div className="simple-table-toggle">
-                    <button 
-                        className={`toggle-button ${useSimpleView ? 'active' : ''}`}
-                        onClick={toggleView}
-                    >
-                        {useSimpleView ? 'View Details' : 'View Simple'}
-                    </button>
-                </div>
-            )}
+
 
             <div className="status-live-game-card-content">
                 <div className="live-game-stats-header">
@@ -245,236 +254,277 @@ export function PlayersTable({ lastFrameWindow, lastFrameDetails, gameMetadata, 
                     </div>
                 </div>
 
-                {/* Render appropriate table based on view mode */}
-                {useSimpleView ? (
-                    <PlayerTableSimple
-                        lastFrameWindow={lastFrameWindow}
-                        lastFrameDetails={lastFrameDetails}
-                        gameMetadata={gameMetadata}
-                        gameDetails={gameDetails}
-                        blueTeam={blueTeam}
-                        redTeam={redTeam}
-                    />
-                ) : (
-                    <>
-                        <table className="status-live-game-card-table">
-                            <thead>
-                            <tr>
-                                <th className="table-top-row-champion" title="champion/team">
-                                    <span>{blueTeam.name.toUpperCase()}</span>
-                                </th>
-                                <th className="table-top-row-vida" title="life">
-                                    <span>HP</span>
-                                </th>
-                                <th className="table-top-row-items" title="items">
-                                    <span>ITEMS</span>
-                                </th>
-                                <th className="table-top-row" title="creep score">
-                                    <span>CS</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>K</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>D</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>A</span>
-                                </th>
-                                <th className="table-top-row" title="gold">
-                                    <span>GOLD</span>
-                                </th>
-                                <th className="table-top-row" title="gold difference">
-                                    <span>+/-</span>
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {lastFrameWindow.blueTeam.participants.map((player: ParticipantWindow) => {
-                                const goldDifference = getGoldDifference(player, "blue", gameMetadata, lastFrameWindow);
-                                return (
-                                    <tr
-                                        key={`blue-player-${player.participantId}`}
-                                        className={`player-row ${expandedPlayer?.participantId === player.participantId && expandedPlayer?.teamSide === 'blue' ? 'expanded' : ''}`}
-                                        onClick={() => handlePlayerRowClick(player.participantId, 'blue')}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                handlePlayerRowClick(player.participantId, 'blue');
-                                            }
-                                        }}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label={`View details for ${gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].summonerName}`}
-                                    >
-                                        <th>
-                                            <div className="player-champion-info">
-                                                <img
-                                                    src={`${CHAMPIONS_URL}${gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].championId}.png`}
-                                                    className="player-champion"
-                                                    alt="champion image"/>
-                                                <span className=" player-champion-info-level">{player.level}</span>
-                                                <div className=" player-champion-info-name">
-                                                    <span>{gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].championId}</span>
-                                                    <span
-                                                        className=" player-card-player-name">{gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].summonerName}</span>
-                                                </div>
-                                            </div>
-                                            {(!isMobile) && (
-                                                <div className="drawer-trigger">
-                                                    <span className="drawer-trigger-icon">▼</span>
-                                                </div>
-                                            )}
-                                        </th>
-                                        <td>
-                                            <MiniHealthBar currentHealth={player.currentHealth} maxHealth={player.maxHealth}/>
-                                        </td>
-                                        <td>
-                                            <ItemsDisplay participantId={player.participantId - 1} lastFrame={lastFrameDetails}/>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats">{player.creepScore}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.kills}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.deaths}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.assists}</div>
-                                        </td>
-                                        <td>
-                                            <div
-                                                className=" player-stats">{Number(player.totalGold).toLocaleString('en-US')}</div>
-                                        </td>
-                                        <td>
-                                            <div className={`player-stats player-gold-${goldDifference?.style}`}>{goldDifference.goldDifference}</div>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                            </tbody>
-                        </table>
-
-                        {/* Player Detail Drawer for Blue Team */}
-                        {expandedPlayer?.teamSide === 'blue' && expandedParticipantDetails && (
-                            <PlayerDetailDrawer
-                                participant={expandedParticipantDetails}
-                                teamSide="blue"
-                                isVisible={true}
-                                onClose={closeDrawer}
-                            />
+                {isMobile && (
+                    <div className="mobile-tabs-container">
+                        <div 
+                            className={`mobile-tab-button ${activeTab === 'stats' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('stats')}
+                        >
+                            Stats
+                        </div>
+                        {hasFullTimeline && (
+                            <div 
+                                className={`mobile-tab-button ${activeTab === 'charts' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('charts')}
+                            >
+                                Charts
+                            </div>
                         )}
+                    </div>
+                )}
 
-                        <table className="status-live-game-card-table">
-                            <thead>
-                            <tr>
-                                <th className="table-top-row-champion" title="champion/team">
-                                    <span>{redTeam.name.toUpperCase()}</span>
-                                </th>
-                                <th className="table-top-row-vida" title="life">
-                                    <span>HP</span>
-                                </th>
-                                <th className="table-top-row-items" title="items">
-                                    <span>ITEMS</span>
-                                </th>
-                                <th className="table-top-row" title="creep score">
-                                    <span>CS</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>K</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>D</span>
-                                </th>
-                                <th className="table-top-row player-stats-kda" title="kills">
-                                    <span>A</span>
-                                </th>
-                                <th className="table-top-row" title="gold">
-                                    <span>GOLD</span>
-                                </th>
-                                <th className="table-top-row" title="gold difference">
-                                    <span>+/-</span>
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {lastFrameWindow.redTeam.participants.map((player) => {
-                                const goldDifference = getGoldDifference(player, "red", gameMetadata, lastFrameWindow);
-                                return(
-                                    <tr
-                                        key={`red-player-${player.participantId}`}
-                                        className={`player-row ${expandedPlayer?.participantId === player.participantId && expandedPlayer?.teamSide === 'red' ? 'expanded' : ''}`}
-                                        onClick={() => handlePlayerRowClick(player.participantId, 'red')}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                handlePlayerRowClick(player.participantId, 'red');
-                                            }
-                                        }}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label={`View details for ${gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].summonerName}`}
-                                    >
-                                        <th>
-                                            <div className="player-champion-info">
-                                                <img
-                                                    src={`${CHAMPIONS_URL}${gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].championId}.png`}
-                                                    className="player-champion"
-                                                    alt="champion image"/>
-                                                <span className=" player-champion-info-level">{player.level}</span>
-                                                <div className=" player-champion-info-name">
-                                                    <span>{gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].championId}</span>
-                                                    <span className=" player-card-player-name">{gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].summonerName}</span>
-                                                </div>
-                                            </div>
-                                            {(!isMobile) && (
-                                                <div className="drawer-trigger">
-                                                    <span className="drawer-trigger-icon">▼</span>
-                                                </div>
-                                            )}
-                                        </th>
-                                        <td>
-                                            <MiniHealthBar currentHealth={player.currentHealth} maxHealth={player.maxHealth}/>
-                                        </td>
-                                        <td>
-                                            <ItemsDisplay participantId={player.participantId - 1} lastFrame={lastFrameDetails}/>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats">{player.creepScore}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.kills}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.deaths}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats player-stats-kda">{player.assists}</div>
-                                        </td>
-                                        <td>
-                                            <div className=" player-stats">{Number(player.totalGold).toLocaleString('en-US')}</div>
-                                        </td>
-                                        <td>
-                                            <div className={`player-stats player-gold-${goldDifference?.style}`}>{goldDifference.goldDifference}</div>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                            </tbody>
-                        </table>
-
-                        {/* Player Detail Drawer for Red Team */}
-                        {expandedPlayer?.teamSide === 'red' && expandedParticipantDetails && (
-                            <PlayerDetailDrawer
-                                participant={expandedParticipantDetails}
-                                teamSide="red"
-                                isVisible={true}
-                                onClose={closeDrawer}
+                {(!isMobile || activeTab === 'stats') ? (
+                    <>
+                        <div className="simple-table-toggle">
+                            <button 
+                                className={`toggle-button ${useSimpleView ? 'active' : ''}`}
+                                onClick={toggleView}
+                            >
+                                {useSimpleView ? 'View Details' : 'View Simple'}
+                            </button>
+                        </div>
+                        {useSimpleView ? (
+                            <PlayerTableSimple
+                                lastFrameWindow={lastFrameWindow}
+                                lastFrameDetails={lastFrameDetails}
+                                gameMetadata={gameMetadata}
+                                gameDetails={gameDetails}
+                                blueTeam={blueTeam}
+                                redTeam={redTeam}
                             />
+                        ) : (
+                            <>
+                                <div className="status-live-game-card-table-wrapper">
+                                    <table className="status-live-game-card-table">
+                                        <thead>
+                                        <tr>
+                                            <th className="table-top-row-champion" title="champion/team">
+                                                <span>{blueTeam.name.toUpperCase()}</span>
+                                            </th>
+                                            <th className="table-top-row-vida" title="life">
+                                                <span>HP</span>
+                                            </th>
+                                            <th className="table-top-row-items" title="items">
+                                                <span>ITEMS</span>
+                                            </th>
+                                            <th className="table-top-row" title="creep score">
+                                                <span>CS</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>K</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>D</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>A</span>
+                                            </th>
+                                            <th className="table-top-row" title="total gold">
+                                                <span>GOLD</span>
+                                            </th>
+                                            <th className="table-top-row" title="gold difference">
+                                                <span>DIFF</span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {lastFrameWindow.blueTeam.participants.map((player) => {
+                                            const goldDifference = getGoldDifference(player, "blue", gameMetadata, lastFrameWindow);
+                                            const isExpanded = expandedPlayer?.participantId === player.participantId && expandedPlayer?.teamSide === 'blue';
+
+                                            return (
+                                                <tr key={player.participantId} 
+                                                    className={`player-row ${isExpanded ? 'expanded' : ''}`}
+                                                    onClick={() => handlePlayerRowClick(player.participantId, 'blue')}
+                                                    data-team="blue"
+                                                >
+                                                    <th>
+                                                        <div className="player-champion-info">
+                                                            <div className="player-champion">
+                                                                <img
+                                                                    src={`${CHAMPIONS_URL}${gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].championId}.png`}
+                                                                    alt="champion image"/>
+                                                                <span className="player-champion-info-level">{player.level}</span>
+                                                            </div>
+                                                            <div className="player-champion-info-name">
+                                                                <span>{gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].championId}</span>
+                                                                <span className="player-card-player-name">{gameMetadata.blueTeamMetadata.participantMetadata[player.participantId - 1].summonerName}</span>
+                                                            </div>
+                                                        </div>
+                                                        {(!isMobile) && (
+                                                            <div className="drawer-trigger">
+                                                                <span className="drawer-trigger-icon">▼</span>
+                                                            </div>
+                                                        )}
+                                                    </th>
+                                                    <td>
+                                                        <MiniHealthBar currentHealth={player.currentHealth} maxHealth={player.maxHealth}/>
+                                                    </td>
+                                                    <td>
+                                                        <ItemsDisplay participantId={player.participantId - 1} lastFrame={lastFrameDetails}/>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats">{player.creepScore}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.kills}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.deaths}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.assists}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats">{Number(player.totalGold).toLocaleString('en-US')}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className={`player-stats player-gold-${goldDifference?.style}`}>{goldDifference.goldDifference}</div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Player Detail Drawer for Blue Team */}
+                                {expandedPlayer?.teamSide === 'blue' && expandedParticipantDetails && (
+                                    <PlayerDetailDrawer
+                                        participant={expandedParticipantDetails}
+                                        teamSide="blue"
+                                        isVisible={true}
+                                        onClose={closeDrawer}
+                                    />
+                                )}
+
+                                <div className="status-live-game-card-table-wrapper" style={{ marginTop: 'var(--space-md)' }}>
+                                    <table className="status-live-game-card-table">
+                                        <thead>
+                                        <tr>
+                                            <th className="table-top-row-champion" title="champion/team">
+                                                <span>{redTeam.name.toUpperCase()}</span>
+                                            </th>
+                                            <th className="table-top-row-vida" title="life">
+                                                <span>HP</span>
+                                            </th>
+                                            <th className="table-top-row-items" title="items">
+                                                <span>ITEMS</span>
+                                            </th>
+                                            <th className="table-top-row" title="creep score">
+                                                <span>CS</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>K</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>D</span>
+                                            </th>
+                                            <th className="table-top-row player-stats-kda" title="kills">
+                                                <span>A</span>
+                                            </th>
+                                            <th className="table-top-row" title="total gold">
+                                                <span>GOLD</span>
+                                            </th>
+                                            <th className="table-top-row" title="gold difference">
+                                                <span>DIFF</span>
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {lastFrameWindow.redTeam.participants.map((player) => {
+                                            const goldDifference = getGoldDifference(player, "red", gameMetadata, lastFrameWindow);
+                                            const isExpanded = expandedPlayer?.participantId === player.participantId && expandedPlayer?.teamSide === 'red';
+
+                                            return (
+                                                <tr key={player.participantId} 
+                                                    className={`player-row ${isExpanded ? 'expanded' : ''}`}
+                                                    onClick={() => handlePlayerRowClick(player.participantId, 'red')}
+                                                    data-team="red"
+                                                >
+                                                    <th>
+                                                        <div className="player-champion-info">
+                                                            <div className="player-champion">
+                                                                <img
+                                                                    src={`${CHAMPIONS_URL}${gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].championId}.png`}
+                                                                    alt="champion image"/>
+                                                                <span className="player-champion-info-level">{player.level}</span>
+                                                            </div>
+                                                            <div className="player-champion-info-name">
+                                                                <span>{gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].championId}</span>
+                                                                <span className="player-card-player-name">{gameMetadata.redTeamMetadata.participantMetadata[player.participantId - 6].summonerName}</span>
+                                                            </div>
+                                                        </div>
+                                                        {(!isMobile) && (
+                                                            <div className="drawer-trigger">
+                                                                <span className="drawer-trigger-icon">▼</span>
+                                                            </div>
+                                                        )}
+                                                    </th>
+                                                    <td>
+                                                        <MiniHealthBar currentHealth={player.currentHealth} maxHealth={player.maxHealth}/>
+                                                    </td>
+                                                    <td>
+                                                        <ItemsDisplay participantId={player.participantId - 1} lastFrame={lastFrameDetails}/>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats">{player.creepScore}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.kills}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.deaths}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats player-stats-kda">{player.assists}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="player-stats">{Number(player.totalGold).toLocaleString('en-US')}</div>
+                                                    </td>
+                                                    <td>
+                                                        <div className={`player-stats player-gold-${goldDifference?.style}`}>{goldDifference.goldDifference}</div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Player Detail Drawer for Red Team */}
+                                {expandedPlayer?.teamSide === 'red' && expandedParticipantDetails && (
+                                    <PlayerDetailDrawer
+                                        participant={expandedParticipantDetails}
+                                        teamSide="red"
+                                        isVisible={true}
+                                        onClose={closeDrawer}
+                                    />
+                                )}
+                            </>
                         )}
                     </>
+                ) : (
+                    /* activeTab === 'charts' on mobile */
+                    <div className="mobile-enhancements">
+                        <div className="mobile-enhancement-section" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)', marginBottom: 'var(--space-md)' }}>
+                            <h4 style={{ fontFamily: 'var(--font-esports)', fontSize: 'var(--text-sm)', color: 'var(--title)', marginBottom: 'var(--space-sm)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gold Advantage</h4>
+                            <GoldGraph
+                                frames={windowFrames}
+                                selectedTimestamp={selectedTimestamp}
+                                onTimestampClick={onTimestampClick!}
+                                height={180}
+                            />
+                        </div>
+                        <div className="mobile-enhancement-section" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)' }}>
+                            <h4 style={{ fontFamily: 'var(--font-esports)', fontSize: 'var(--text-sm)', color: 'var(--title)', marginBottom: 'var(--space-sm)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Match Timeline</h4>
+                            <ObjectiveTimeline
+                                frames={windowFrames}
+                                selectedTimestamp={selectedTimestamp}
+                                onTimestampClick={onTimestampClick!}
+                            />
+                        </div>
+                    </div>
                 )}
             </div>
 

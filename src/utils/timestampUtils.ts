@@ -212,7 +212,147 @@ export function formatLocalizedTime(
     
     return formattedTime;
   } catch (error) {
-    console.error('Error formatting time:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error formatting time:', error);
+    }
     return "TBD";
   }
+}
+
+/**
+ * Detects gaps in a sorted timestamp array
+ * @param timestamps Sorted array of timestamps (ascending order)
+ * @param expectedStepMs Expected interval between timestamps (default: 10 seconds)
+ * @returns Array of gap ranges with start, end, and count of missing timestamps
+ */
+export function detectGaps(
+  timestamps: number[],
+  expectedStepMs: number = 10_000
+): Array<{ start: number; end: number; missingCount: number }> {
+  const gaps: Array<{ start: number; end: number; missingCount: number }> = [];
+
+  for (let i = 1; i < timestamps.length; i++) {
+    const expected = timestamps[i - 1] + expectedStepMs;
+    if (timestamps[i] > expected) {
+      const missingCount = Math.floor((timestamps[i] - timestamps[i - 1]) / expectedStepMs) - 1;
+      if (missingCount > 0) {
+        gaps.push({
+          start: timestamps[i - 1],
+          end: timestamps[i],
+          missingCount
+        });
+      }
+    }
+  }
+
+  return gaps;
+}
+
+/**
+ * Generates timestamps to fill a gap between two timestamps
+ * @param start Start timestamp (exclusive - not included in output)
+ * @param end End timestamp (exclusive - not included in output)
+ * @param stepMs Interval between timestamps (default: 10 seconds)
+ * @returns Array of missing timestamps to fill the gap
+ */
+export function generateGapFillTimestamps(
+  start: number,
+  end: number,
+  stepMs: number = 10_000
+): number[] {
+  const timestamps: number[] = [];
+  let current = start + stepMs;
+  while (current < end) {
+    timestamps.push(current);
+    current += stepMs;
+  }
+  return timestamps;
+}
+
+/**
+ * Generates sparse sampling timestamps going backward from an anchor point
+ * @param anchor The anchor timestamp to start from
+ * @param stepMs Sampling interval (default: 60 seconds)
+ * @param count Number of timestamps to generate
+ * @returns Array of sparse timestamps in descending order (oldest first after sort)
+ */
+export function generateSparseTimestamps(
+  anchor: number,
+  stepMs: number = 60_000,
+  count: number
+): number[] {
+  const timestamps: number[] = [];
+  // Round anchor down to nearest step boundary
+  let current = Math.floor(anchor / stepMs) * stepMs;
+
+  for (let i = 0; i < count; i++) {
+    timestamps.push(current);
+    current -= stepMs;
+  }
+
+  return timestamps;
+}
+
+/**
+ * Generates medium-density sampling timestamps going backward from an anchor
+ * @param anchor The anchor timestamp to start from
+ * @param stepMs Sampling interval (default: 30 seconds)
+ * @param count Number of timestamps to generate
+ * @returns Array of timestamps
+ */
+export function generateMediumTimestamps(
+  anchor: number,
+  stepMs: number = 30_000,
+  count: number
+): number[] {
+  const timestamps: number[] = [];
+  // Round anchor down to nearest step boundary
+  let current = Math.floor(anchor / stepMs) * stepMs;
+
+  for (let i = 0; i < count; i++) {
+    timestamps.push(current);
+    current -= stepMs;
+  }
+
+  return timestamps;
+}
+
+/**
+ * Frame signature interface for team data
+ */
+interface TeamFrameData {
+  totalKills: number;
+  towers: number;
+  totalGold: number;
+}
+
+/**
+ * Frame signature interface for frame data
+ */
+interface FrameSignatureData {
+  blueTeam: TeamFrameData;
+  redTeam: TeamFrameData;
+}
+
+/**
+ * Creates a hash signature of frame content for duplicate detection
+ * Uses key game state fields that change when the game progresses
+ * @param frame Frame object with team data
+ * @returns Hash string representing frame state
+ */
+export function computeFrameSignature(frame: FrameSignatureData): string {
+  if (!frame || !frame.blueTeam || !frame.redTeam) {
+    return '';
+  }
+  const { blueTeam, redTeam } = frame;
+  return `${blueTeam.totalKills}-${redTeam.totalKills}-${blueTeam.towers}-${redTeam.towers}-${Math.floor(blueTeam.totalGold / 1000)}-${Math.floor(redTeam.totalGold / 1000)}`;
+}
+
+/**
+ * Delays execution for a specified duration
+ * @param ms Milliseconds to delay
+ * @returns Promise that resolves after the delay
+ */
+export function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

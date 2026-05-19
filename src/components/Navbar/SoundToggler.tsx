@@ -1,11 +1,12 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState, MouseEvent} from "react";
 import './styles/navbarStyle.css'
+import { safeGetItem, safeSetItem } from "../../utils/safeStorage";
 
 export function SoundToggler() {
     const [toggled, setToggled] = useState(false);
 
     useEffect(() => {
-        const soundData = localStorage.getItem("sound");
+        const soundData = safeGetItem("sound");
         if(soundData) {
             if (soundData === "mute") {
                 setToggled(false);
@@ -15,14 +16,14 @@ export function SoundToggler() {
         }
     }, []); // Add empty dependency array to run only once on mount
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if(toggled) {
-            localStorage.setItem("sound", "mute");
+            safeSetItem("sound", "mute");
         }else{
-            localStorage.setItem("sound", "unmute");
+            safeSetItem("sound", "unmute");
         }
 
         setToggled((s) => !s);

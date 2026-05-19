@@ -1,8 +1,8 @@
 /**
  * LiveGameCard Component Styles - UI Redesign Phase 2
  *
- * Game cards with improved hover interactions and visual hierarchy.
- * Uses design tokens for consistent styling.
+ * Game cards redesigned with responsive glassmorphism, 
+ * pulsing neon highlights for live games, and smooth micro-interactions.
  */
 
 /* ===========================================
@@ -10,24 +10,35 @@
  * =========================================== */
 
 .live-game-card {
-  width: 25rem;
-  padding: var(--space-sm);
+  position: relative;
+  width: 100%;
+  max-width: 25rem;
+  padding: var(--space-md);
   text-align: center;
   background: var(--card-color);
-  box-shadow: var(--shadow-card);
-  border-radius: var(--radius-lg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-xl);
   transition:
-    transform var(--transition-base) var(--ease-smooth),
-    box-shadow var(--transition-base) var(--ease-smooth);
+    transform var(--transition-base) var(--ease-bounce),
+    box-shadow var(--transition-base) var(--ease-smooth),
+    border-color var(--transition-base) var(--ease-smooth);
+  overflow: hidden;
 }
 
+/* Sub-header showing League/Tournament name */
 .live-game-card > h3 {
-  padding: var(--space-xs) 0;
-  color: var(--text);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  padding-bottom: var(--space-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-esports);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-md);
 }
 
 /* ===========================================
@@ -36,17 +47,25 @@
 
 .live-game-card-content {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  padding: var(--space-xs) 0;
 }
 
 .live-game-card-content > h1 {
   display: flex;
   align-items: center;
-  padding: 0 var(--space-md);
+  justify-content: center;
+  padding: 0 var(--space-sm);
   color: var(--text-secondary);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-family: var(--font-esports);
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
 }
 
 /* ===========================================
@@ -58,93 +77,155 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
+  flex: 1;
 }
 
 .live-game-card-team-image {
-  width: 4rem;
-  height: 4rem;
-
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
   border-radius: var(--radius-md);
-  margin: var(--space-md) var(--space-xl);
   padding: var(--space-xs);
-  box-shadow: inset 0 1px 3px 1px var(--shadow-color);
-
-  background: var(--background);
-  transition: transform var(--transition-base) var(--ease-smooth);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-base) var(--ease-bounce);
 }
 
 .live-game-card-title {
-  font-weight: var(--font-medium);
-  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  color: var(--title);
   font-size: var(--text-sm);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 8rem;
 }
 
 /* ===========================================
- * TIME DISPLAY
+ * TIME DISPLAY (Scheduled/Past Games)
  * =========================================== */
 
 .live-game-card-time {
-  margin-top: var(--space-sm);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  text-align: center;
+  margin-top: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  font-family: var(--font-esports);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--text-highlight);
+  background: rgba(0, 242, 254, 0.05);
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  margin-left: calc(-1 * var(--space-md));
+  margin-right: calc(-1 * var(--space-md));
+  margin-bottom: calc(-1 * var(--space-md));
+  letter-spacing: 0.08em;
 }
 
 /* ===========================================
- * HOVER INTERACTIONS
+ * SPECIAL CARD STATES (LIVE & INTERACTIVE)
+ * =========================================== */
+
+/* Active LIVE game neon indicator */
+.live-game-card.is-live {
+  border-color: rgba(255, 8, 68, 0.35);
+  animation: liveGamePulse 2.5s infinite;
+}
+
+.live-game-card.is-live::before {
+  content: "LIVE";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-esports);
+  font-size: 0.65rem;
+  font-weight: var(--font-bold);
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow-red);
+  letter-spacing: 0.05em;
+  animation: livePulse 1.5s infinite;
+}
+
+/* ===========================================
+ * HOVER INTERACTION ANIMATIONS
  * =========================================== */
 
 .live-game-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl), var(--glass-shadow);
+  border-color: var(--border-color-hover);
+}
+
+.live-game-card.is-live:hover {
+  border-color: var(--red);
 }
 
 .live-game-card:hover .live-game-card-team-image {
-  transform: scale(1.05);
+  transform: scale(1.1);
+  border-color: var(--text-highlight);
 }
 
-/* Focus state for keyboard navigation */
+/* Focus outline for keyboard navigation */
 a:focus-visible .live-game-card {
   outline: 2px solid var(--blue);
-  outline-offset: 2px;
+  outline-offset: 4px;
 }
 
 /* ===========================================
- * GAMES LIST CONTAINER
+ * SEPARATORS AND CONTAINERS
  * =========================================== */
+
+.orders-container {
+  width: 100%;
+}
 
 .games-list-container {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 .games-list-items {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, 25rem);
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   grid-gap: var(--space-xl);
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
 }
 
-/* ===========================================
- * GAMES SEPARATOR
- * =========================================== */
-
 .games-separator {
-  margin: var(--space-xl) 0;
-  border-bottom: 1px solid var(--text);
-  opacity: 0.3;
+  margin: var(--space-2xl) 0;
+  border-bottom: 1px solid var(--border-color);
+  opacity: 0.5;
   width: 100%;
   height: 1px;
 }
 
 .games-of-day {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+  font-family: var(--font-esports);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.1em;
+  color: var(--title);
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.games-of-day::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 1.25rem;
+  background: var(--blue);
+  border-radius: var(--radius-full);
+  box-shadow: var(--glow-blue);
 }
 
 /* ===========================================
@@ -156,80 +237,87 @@ a:focus-visible .live-game-card {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: var(--space-3xl) var(--space-md);
+  background: var(--card-color);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  backdrop-filter: var(--glass-blur);
 }
 
 .empty-games-galaxy {
-  margin: var(--space-lg) 0;
-  width: 40%;
+  margin-bottom: var(--space-lg);
+  width: 12rem;
+  height: auto;
+  opacity: 0.4;
+  filter: drop-shadow(0 0 15px var(--blue));
 }
 
-/* Compact inline empty state to avoid large gaps */
+.game-list-items-empty {
+  font-family: var(--font-esports);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
 .empty-games-inline {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: var(--space-sm) 0;
-  color: var(--text);
+  padding: var(--space-2xl) var(--space-md);
+  background: var(--card-color);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--border-color);
 }
 
 .empty-games-inline-icon {
-  width: var(--icon-lg);
+  width: 4rem;
   height: auto;
-  opacity: 0.9;
+  opacity: 0.3;
 }
 
 .empty-games-inline-text {
+  font-family: var(--font-esports);
+  font-size: var(--text-base);
   font-weight: var(--font-semibold);
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
 }
 
 /* ===========================================
  * RESPONSIVE ADJUSTMENTS
  * =========================================== */
 
-@media (max-width: 1080px) {
-  .games-list-items {
-    grid-gap: var(--space-lg);
-  }
-}
-
 @media (max-width: 720px) {
+  .games-list-items {
+    grid-template-columns: 1fr;
+    grid-gap: var(--space-md);
+  }
+
   .live-game-card {
-    width: 100%;
-    max-width: 25rem;
-    padding: var(--space-sm);
+    max-width: 100%;
+    padding: var(--space-md);
   }
 
   .live-game-card-team-image {
     width: 3rem;
     height: 3rem;
-    margin: var(--space-sm) var(--space-md);
-  }
-
-  .live-game-card-content > h1 {
-    font-size: var(--text-base);
-    padding: 0 var(--space-sm);
-  }
-
-  .games-list-items {
-    grid-template-columns: 1fr;
-    grid-gap: var(--space-md);
-    padding: 0 var(--space-sm);
-  }
-
-  .games-separator {
-    margin: var(--space-lg) 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .live-game-card-team-image {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin: var(--space-sm);
   }
 
   .live-game-card-title {
     font-size: var(--text-xs);
+    max-width: 6.5rem;
+  }
+
+  .live-game-card-content > h1 {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: var(--text-sm);
+  }
+
+  .games-separator {
+    margin: var(--space-xl) 0;
   }
 }

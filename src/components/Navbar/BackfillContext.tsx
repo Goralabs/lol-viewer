@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction, createContext, useContext, useEffect, useState, useCallback } from "react";
+import { safeGetItem, safeSetItem } from "../../utils/safeStorage";
 
 export type BackfillState = "enabled" | "disabled";
 
@@ -22,15 +23,15 @@ interface BackfillProviderProps {
 
 export const BackfillProvider: React.FC<BackfillProviderProps> = ({children}) => {
     const [backfillState, setBackfillState] = useState<BackfillState>(() => {
-        const saved = localStorage.getItem("backfill");
+        const saved = safeGetItem("backfill");
         return (saved === "disabled" ? "disabled" : "enabled") as BackfillState;
     });
-    
+
     // This will be set by the useFrameIndex hook
     const [stopBackfill, setStopBackfill] = useState<(() => void) | undefined>(() => undefined);
 
     useEffect(() => {
-        localStorage.setItem("backfill", backfillState);
+        safeSetItem("backfill", backfillState);
     }, [backfillState]);
 
     // Register the stopBackfill function from the hook

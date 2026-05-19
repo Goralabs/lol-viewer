@@ -2,10 +2,11 @@ import './styles/playerStatusStyle.css'
 
 import {GameMetadata, Participant} from "./types/windowLiveTypes";
 
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {ToastContainer, toast} from 'react-toastify';
 import {Frame as FrameWindow} from "./types/windowLiveTypes";
 import {Team} from "./types/detailsPersistentTypes";
+import { safeGetItem } from "../../utils/safeStorage";
 
 // Import audio assets via ESM for Vite compatibility
 import kill from "../../assets/audios/champion_killed.ogg";
@@ -62,7 +63,7 @@ export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTea
         // Only show notifications and play sounds in live mode
         if (!isLive) return;
 
-        const soundData = localStorage.getItem("sound");
+        const soundData = safeGetItem("sound");
         let isMuted = false;
         if(soundData) {
             if (soundData === "mute") {
@@ -117,14 +118,14 @@ export function LiveAPIWatcher({ lastFrameWindow, gameMetadata, blueTeam, redTea
 
         for (let i = 0; i < status.participants.blue.length; i++) {
             if(status.participants.blue[i].kills !== lastFrameWindow.blueTeam.participants[i].kills){
-                createToast(true, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
+                createToast(true, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.blueTeamMetadata.participantMetadata[status.participants.blue[i].participantId - 1].championId}.png`)
                 isPlaying = true
             }
         }
 
         for (let i = 0; i < status.participants.red.length; i++) {
             if(status.participants.red[i].kills !== lastFrameWindow.redTeam.participants[i].kills){
-                createToast(false, isPlaying, kill, "Got a kill", `http://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
+                createToast(false, isPlaying, kill, "Got a kill", `https://ddragon.leagueoflegends.com/cdn/15.20.1/img/champion/${gameMetadata.redTeamMetadata.participantMetadata[status.participants.red[i].participantId - 6].championId}.png`)
                 isPlaying = true
             }
         }

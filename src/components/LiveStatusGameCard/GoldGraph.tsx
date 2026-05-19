@@ -169,10 +169,13 @@ export function GoldGraph({
         ctx.stroke();
 
         // Draw gold lines
-        ctx.lineWidth = 2;
+        ctx.save();
+        ctx.shadowBlur = 6;
+        ctx.lineWidth = 2.5;
         
-        // Blue team gold
-        ctx.strokeStyle = '#1DA1F2';
+        // Blue team gold (Neon Cyan)
+        ctx.strokeStyle = '#00f2fe';
+        ctx.shadowColor = 'rgba(0, 242, 254, 0.4)';
         ctx.beginPath();
         goldData.forEach((point, index) => {
             const x = xScale(point.timestamp);
@@ -184,9 +187,10 @@ export function GoldGraph({
             }
         });
         ctx.stroke();
-
-        // Red team gold
-        ctx.strokeStyle = '#E0245E';
+ 
+        // Red team gold (Neon Magenta)
+        ctx.strokeStyle = '#ff007f';
+        ctx.shadowColor = 'rgba(255, 0, 127, 0.4)';
         ctx.beginPath();
         goldData.forEach((point, index) => {
             const x = xScale(point.timestamp);
@@ -198,9 +202,15 @@ export function GoldGraph({
             }
         });
         ctx.stroke();
-
-        // Draw gold difference area
-        ctx.fillStyle = 'rgba(29, 161, 242, 0.2)';
+        ctx.restore();
+ 
+        // Draw gold difference area with custom vertical gradient
+        const diffGradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+        diffGradient.addColorStop(0, 'rgba(0, 242, 254, 0.25)'); // Blue lead (top)
+        diffGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.02)'); // Neutral (middle)
+        diffGradient.addColorStop(1, 'rgba(255, 0, 127, 0.25)'); // Red lead (bottom)
+        
+        ctx.fillStyle = diffGradient;
         ctx.beginPath();
         goldData.forEach((point, index) => {
             const x = xScale(point.timestamp);
@@ -298,15 +308,15 @@ export function GoldGraph({
             />
             <div className="gold-graph-legend">
                 <div className="legend-item">
-                    <div className="legend-color" style={{ backgroundColor: '#1DA1F2' }}></div>
+                    <div className="legend-color" style={{ backgroundColor: '#00f2fe', boxShadow: '0 0 4px rgba(0, 242, 254, 0.4)' }}></div>
                     <span>Blue Gold</span>
                 </div>
                 <div className="legend-item">
-                    <div className="legend-color" style={{ backgroundColor: '#E0245E' }}></div>
+                    <div className="legend-color" style={{ backgroundColor: '#ff007f', boxShadow: '0 0 4px rgba(255, 0, 127, 0.4)' }}></div>
                     <span>Red Gold</span>
                 </div>
                 <div className="legend-item">
-                    <div className="legend-color" style={{ backgroundColor: 'rgba(29, 161, 242, 0.2)' }}></div>
+                    <div className="legend-color" style={{ background: 'linear-gradient(to right, #00f2fe, #ff007f)', opacity: 0.7 }}></div>
                     <span>Gold Diff</span>
                 </div>
                 {teamfightMarkers.length > 0 && (

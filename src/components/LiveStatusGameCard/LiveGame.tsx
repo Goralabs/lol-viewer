@@ -272,13 +272,17 @@ export function LiveGame() {
             currentDetails !== undefined &&
             metadata !== undefined &&
             gameData !== undefined ? (
-                <PlayersTable
+                 <PlayersTable
                     lastFrameWindow={currentWindow}
                     lastFrameDetails={currentDetails}
                     gameMetadata={metadata}
                     gameDetails={gameData}
                     isLive={isLive}
                     isFinal={isFinal}
+                    windowFrames={windowFrames}
+                    selectedTimestamp={selectedTimestamp}
+                    onTimestampClick={setPlaybackByEpoch}
+                    hasFullTimeline={hasFullTimeline}
                 />
             ) : isUpcomingGame ? (
                 <div className="loading-game-container">
@@ -290,56 +294,29 @@ export function LiveGame() {
                 </div>
             )}
 
-            {/* Live Game Enhancements - New Components */}
-            {currentWindow && currentDetails && metadata && hasFullTimeline && (
-                <>
-                    {!isMobile && (
-                        <div className="live-game-enhancements">
-                            <div className="enhancements-row">
-                                <div className="enhancement-section">
-                                    <GoldGraph
-                                        frames={windowFrames}
-                                        selectedTimestamp={selectedTimestamp}
-                                        onTimestampClick={setPlaybackByEpoch}
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="enhancements-row">
-                                <div className="enhancement-section">
-                                    <ObjectiveTimeline
-                                        frames={windowFrames}
-                                        selectedTimestamp={selectedTimestamp}
-                                        onTimestampClick={setPlaybackByEpoch}
-                                    />
-                                </div>
-                            </div>
-                            
+            {/* Live Game Enhancements - Only show on desktop since mobile charts are integrated into tabs */}
+            {currentWindow && currentDetails && metadata && hasFullTimeline && !isMobile && (
+                <div className="live-game-enhancements">
+                    <div className="enhancements-row">
+                        <div className="enhancement-section">
+                            <GoldGraph
+                                frames={windowFrames}
+                                selectedTimestamp={selectedTimestamp}
+                                onTimestampClick={setPlaybackByEpoch}
+                            />
                         </div>
-                    )}
+                    </div>
                     
-                    {/* Mobile-optimized components */}
-                    {isMobile && (
-                        <div className="mobile-enhancements">
-                            <div className="mobile-enhancement-section">
-                                    <GoldGraph
-                                        frames={windowFrames}
-                                        selectedTimestamp={selectedTimestamp}
-                                        onTimestampClick={setPlaybackByEpoch}
-                                        height={150}
-                                    />
-                            </div>
-                            
-                            <div className="mobile-enhancement-section">
-                                    <ObjectiveTimeline
-                                        frames={windowFrames}
-                                        selectedTimestamp={selectedTimestamp}
-                                        onTimestampClick={setPlaybackByEpoch}
-                                    />
-                            </div>
+                    <div className="enhancements-row">
+                        <div className="enhancement-section">
+                            <ObjectiveTimeline
+                                frames={windowFrames}
+                                selectedTimestamp={selectedTimestamp}
+                                onTimestampClick={setPlaybackByEpoch}
+                            />
                         </div>
-                    )}
-                </>
+                    </div>
+                </div>
             )}
         </div>
     );

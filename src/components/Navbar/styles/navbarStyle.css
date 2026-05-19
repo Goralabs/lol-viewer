@@ -1,21 +1,24 @@
 /**
  * Navbar Component Styles - UI Redesign Phase 2
  *
- * Modernized navigation bar with improved layout and interactions.
- * Uses design tokens for consistent styling.
+ * Premium glassmorphic navigation bar with improved layout,
+ * custom glowing switches, and mobile-first responsive scaling.
  */
 
 .navbar-container {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-
+  position: sticky;
+  top: 0;
   width: 100%;
   height: 5rem;
-
-  background-color: var(--card-color);
-  box-shadow: var(--shadow-card);
-  position: relative;
+  padding: 0 clamp(var(--space-md), 4vw, var(--space-2xl));
+  background: var(--card-color);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--glass-shadow);
   z-index: var(--z-fixed);
 }
 
@@ -25,26 +28,19 @@
 
 .navbar-logo-container {
   display: flex;
-  justify-content: center;
   align-items: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -70%);
 }
 
 .navbar-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0;
+  gap: var(--space-sm);
   text-decoration: none;
   transition: opacity var(--transition-fast);
 }
 
 .navbar-logo:hover {
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .navbar-logo:focus-visible {
@@ -54,23 +50,31 @@
 }
 
 .navbar-icon-img {
-  width: 2.5rem;
-  transform: translate(0%, 22%);
-  transition: transform var(--transition-base);
+  width: 2.25rem;
+  height: auto;
+  transition: transform var(--transition-base) var(--ease-bounce);
 }
 
 .navbar-logo:hover .navbar-icon-img {
-  transform: translate(0%, 22%) scale(1.05);
+  transform: rotate(15deg) scale(1.1);
 }
 
 .navbar-icon-img > path {
   fill: var(--logo-color);
+  filter: drop-shadow(0 0 4px var(--blue));
 }
 
 .navbar-icon {
   color: var(--title);
-  font: var(--font-medium) var(--text-xl) 'Inter', sans-serif;
+  font-family: var(--font-esports);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   margin: 0;
+  background: linear-gradient(135deg, var(--title) 30%, var(--blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   transition: color var(--transition-fast);
 }
 
@@ -81,10 +85,7 @@
 .settings-container {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-  margin-left: auto;
-  margin-right: clamp(var(--space-lg), 6vw, 5rem);
+  gap: var(--space-md);
 }
 
 /* ===========================================
@@ -95,23 +96,24 @@
 .theme-toggle,
 .backfill-toggle {
   cursor: pointer;
-  height: 44px; /* Minimum touch target size */
-  width: 66px;
+  height: 2.25rem; /* ~36px */
+  width: 4rem;    /* ~64px */
   border-radius: var(--radius-full);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   background-color: var(--theme-switch-bg);
   position: relative;
   transition:
     background-color var(--transition-base),
-    border-color var(--transition-base);
-  /* Ensure full touch target area */
-  padding: var(--space-sm);
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .sound-toggle:hover,
 .theme-toggle:hover,
 .backfill-toggle:hover {
   border-color: var(--border-color-hover);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 8px rgba(255, 255, 255, 0.05);
 }
 
 .sound-toggle:focus-visible,
@@ -125,22 +127,55 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 28px;
-  width: 28px;
+  height: 1.75rem; /* 28px */
+  width: 1.75rem;  /* 28px */
   border-radius: var(--radius-full);
   background-color: var(--theme-switch-notch);
   position: absolute;
   top: 50%;
-  left: var(--space-xs);
+  left: 0.1875rem; /* 3px */
   transform: translate(0, -50%);
-  transition: transform var(--transition-base) var(--ease-bounce);
-  box-shadow: var(--shadow-sm);
+  transition: 
+    transform var(--transition-base) var(--ease-bounce),
+    background-color var(--transition-base),
+    box-shadow var(--transition-base);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  user-select: none;
 }
 
+/* Active states (sliding notch right) */
 .dark > .notch,
 .muted > .notch,
 .backfill-toggle.disabled > .notch {
-  transform: translate(calc(66px - 28px - var(--space-xs) * 2), -50%);
+  transform: translate(1.875rem, -50%); /* 64px - 28px - 6px = 30px -> 1.875rem */
+}
+
+/* Add neon color cues to active/inactive switches */
+.theme-toggle.dark {
+  border-color: var(--blue);
+}
+.theme-toggle.dark > .notch {
+  box-shadow: var(--glow-blue);
+  background: var(--blue);
+  color: #0b0f19;
+}
+
+.sound-toggle.muted {
+  border-color: var(--red);
+}
+.sound-toggle.muted > .notch {
+  box-shadow: var(--glow-red);
+  background: var(--red);
+  color: #fff;
+}
+
+.backfill-toggle.disabled {
+  border-color: var(--text-secondary);
+}
+.backfill-toggle.disabled > .notch {
+  background: var(--text-secondary);
+  color: #fff;
 }
 
 /* ===========================================
@@ -152,16 +187,15 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 auto;
 }
 
 .toggle-tooltip {
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--card-color);
-  color: var(--text);
+  transform: translateX(-50%) translateY(8px);
+  background-color: #121824;
+  color: #ffffff;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
@@ -169,16 +203,16 @@
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast) var(--ease-out), transform var(--transition-fast) var(--ease-out);
   z-index: var(--z-tooltip);
   border: 1px solid var(--border-color);
-  margin-top: var(--space-xs);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .toggle-container:hover .toggle-tooltip,
 .toggle-container:focus-within .toggle-tooltip {
   opacity: 1;
+  transform: translateX(-50%) translateY(4px);
 }
 
 /* ===========================================
@@ -187,38 +221,49 @@
 
 @media (max-width: 720px) {
   .navbar-container {
-    height: 4rem;
+    height: 4.5rem;
+    padding: 0 var(--space-md);
   }
 
   .navbar-icon-img {
-    width: 2rem;
+    width: 1.85rem;
   }
 
   .navbar-icon {
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
   }
 
   .settings-container {
-    gap: var(--space-xs);
-    margin-right: var(--space-sm);
+    gap: var(--space-sm);
   }
 
-  /* Keep touch targets at minimum 44px on mobile */
   .sound-toggle,
   .theme-toggle,
   .backfill-toggle {
-    height: 44px;
-    width: 56px;
+    height: 2rem;
+    width: 3.25rem;
   }
 
   .notch {
-    height: 24px;
-    width: 24px;
+    height: 1.5rem;
+    width: 1.5rem;
+    font-size: 0.8rem;
+    left: 0.1875rem;
   }
 
   .dark > .notch,
   .muted > .notch,
   .backfill-toggle.disabled > .notch {
-    transform: translate(calc(56px - 24px - var(--space-xs) * 2), -50%);
+    transform: translate(1.375rem, -50%); /* 52px - 24px - 6px = 22px -> 1.375rem */
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-icon {
+    display: none; /* Hide text logo on tiny screens to guarantee space for settings */
+  }
+  
+  .navbar-container {
+    justify-content: space-between;
   }
 }

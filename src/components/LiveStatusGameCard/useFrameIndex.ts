@@ -7,11 +7,15 @@ import {
   getISODateMultiplyOf10,
 } from "../../utils/LoLEsportsAPI";
 import {
-  roundToPrevious10s,
   toISO,
   toEpochMillis,
   findClosestTimestampIndex,
   isTerminalGameState,
+  detectGaps,
+  generateGapFillTimestamps,
+  generateSparseTimestamps,
+  computeFrameSignature,
+  delay,
 } from "../../utils/timestampUtils";
 import { useBackfill } from "../Navbar/BackfillContext";
 
@@ -25,13 +29,23 @@ interface FrameIndexState {
   playbackPointer: number | null;
   metadata: GameMetadata | undefined;
   isFinal: boolean; // New flag to indicate if the game is finished
-  
+
   // Live playback state
   isLivePaused: boolean;
   desiredLagMs: number;
   speedFactor: number;
   displayIndex: number;
   playQueue: number[];
+
+  // Request tracking for deduplication
+  requestedTimestamps: Set<number>;
+  failedTimestamps: Set<number>;
+  backfillPhase: 'idle' | 'sparse' | 'medium' | 'dense' | 'complete';
+
+  // Terminal detection improvements
+  lastFrameSignature: string | null;
+  duplicateFrameCount: number;
+  consecutiveEmptyResponses: number;
 }
 
 interface FrameIndexReturn {
@@ -68,13 +82,20 @@ interface MergeResult {
   hasFramesAfter: boolean;
 }
 
-const BACKFILL_STEP_MS = 10_000;
-const BACKFILL_DELAY_MS = 700; // Base delay between backfill batches
 const BACKFILL_RETRY_DELAY_MS = 1_000;
-const BACKFILL_CONCURRENCY = 10; // Bounded concurrency to avoid request spikes
-const BACKFILL_BATCH_JITTER_MS = 50; // Small jitter between batches
+const BACKFILL_CONCURRENCY = 10; // Bounded concurrency for dense phase
 const LIVE_POLL_INTERVAL_MS = 1000; // Reduce request rate for live polling
 const FINAL_STATE_BACKOFF_MS = 60_000; // 1 minute backoff for finished games
+
+// Multi-phase backfill constants
+const SPARSE_STEP_MS = 60_000;        // 1 minute - quick sparse sampling
+const MEDIUM_STEP_MS = 30_000;        // 30 seconds - medium density
+const DENSE_STEP_MS = 10_000;         // 10 seconds - full resolution
+const MAX_IN_FLIGHT = 25;             // Increased from 10 for faster backfill
+const BATCH_DELAY_MS = 150;           // Reduced from 700ms
+const DUPLICATE_THRESHOLD = 3;        // Stop if same frame N times
+const EMPTY_RESPONSE_THRESHOLD = 5;   // Stop after N empty responses
+const MAX_BACKFILL_RANGE_MS = 7_200_000; // 2 hours max backfill range
 
 // Live playback constants
 const DEFAULT_DESIRED_LAG_MS = 10_000; // 10 seconds behind live
@@ -83,8 +104,8 @@ const MAX_FRAME_MS = 4000; // Maximum time between frames
 // DRIFT_CHECK_INTERVAL_MS is no longer needed since we removed automatic speed adjustments
 const MAX_SPEED_FACTOR = 10.0; // Maximum playback speed
 
-// Debug logging flag
-const DEBUG_POLLING = process.env.NODE_ENV === 'development';
+// Debug logging flag - only logs in development mode
+const DEBUG_POLLING = import.meta.env.DEV;
 
 const createInitialState = (): FrameIndexState => ({
   framesWindow: new Map(),
@@ -96,16 +117,24 @@ const createInitialState = (): FrameIndexState => ({
   playbackPointer: null,
   metadata: undefined,
   isFinal: false,
-  
+
   // Live playback state
   isLivePaused: false,
   desiredLagMs: DEFAULT_DESIRED_LAG_MS,
   speedFactor: 1.0,
   displayIndex: -1,
   playQueue: [],
-});
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Request tracking for deduplication
+  requestedTimestamps: new Set(),
+  failedTimestamps: new Set(),
+  backfillPhase: 'idle',
+
+  // Terminal detection improvements
+  lastFrameSignature: null,
+  duplicateFrameCount: 0,
+  consecutiveEmptyResponses: 0,
+});
 
 export function useFrameIndex(gameId: string): FrameIndexReturn {
   const { isBackfillEnabled } = useBackfill();
@@ -718,174 +747,280 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
     [gameId]
   );
 
+  /**
+   * Fetches a batch of timestamps with deduplication
+   * Marks timestamps as requested BEFORE fetching to prevent duplicate requests
+   */
+  const fetchTimestampBatch = useCallback(async (
+    timestamps: number[],
+    signal?: AbortSignal
+  ): Promise<{ hadNewData: boolean; hadAnyData: boolean }> => {
+    if (timestamps.length === 0) return { hadNewData: false, hadAnyData: false };
+
+    // Mark all timestamps as requested BEFORE fetching to prevent duplicates
+    setFrameState(prev => {
+      const newRequested = new Set(prev.requestedTimestamps);
+      timestamps.forEach(ts => newRequested.add(ts));
+      return { ...prev, requestedTimestamps: newRequested };
+    });
+
+    const fetchPromises = timestamps.map(async (targetCursor) => {
+      const targetTime = toISO(new Date(targetCursor));
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount <= maxRetries) {
+        if (cancelBackfillRef.current || signal?.aborted) {
+          throw new Error('Backfill cancelled');
+        }
+
+        try {
+          const chunk = await fetchChunk(targetTime, signal);
+          return { chunk, targetCursor };
+        } catch (error) {
+          retryCount++;
+          if (retryCount > maxRetries || cancelBackfillRef.current) {
+            if (DEBUG_POLLING) {
+              console.warn(`Backfill chunk failed after ${maxRetries} retries:`, error);
+            }
+            // Mark as failed
+            setFrameState(prev => {
+              const newFailed = new Set(prev.failedTimestamps);
+              newFailed.add(targetCursor);
+              return { ...prev, failedTimestamps: newFailed };
+            });
+            return null;
+          }
+
+          const baseDelay = BACKFILL_RETRY_DELAY_MS;
+          const exponentialDelay = baseDelay * Math.pow(2, retryCount - 1);
+          const jitter = Math.random() * 100;
+          await delay(exponentialDelay + jitter);
+        }
+      }
+
+      return null;
+    });
+
+    const results = await Promise.allSettled(fetchPromises);
+
+    let hadNewData = false;
+    let hadAnyData = false;
+
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value !== null) {
+        const { chunk } = result.value;
+        const { windowFrames, detailFrames, metadata } = chunk;
+
+        if (windowFrames.length > 0 || detailFrames.length > 0) {
+          hadAnyData = true;
+          const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
+          if (mergeResult.changed) {
+            hadNewData = true;
+          }
+        }
+      }
+    }
+
+    return { hadNewData, hadAnyData };
+  }, [fetchChunk, mergeFrames, setFrameState]);
+
+  /**
+   * Phase 1: Sparse backfill at 60-second intervals
+   */
+  const runSparseBackfill = useCallback(async () => {
+    const currentState = stateRef.current;
+    if (currentState.orderedTimestamps.length === 0) return;
+
+    const anchorTs = currentState.orderedTimestamps[0];
+    const minTs = anchorTs - MAX_BACKFILL_RANGE_MS;
+
+    // Generate sparse timestamps going backward
+    const sparseTimestamps = generateSparseTimestamps(anchorTs, SPARSE_STEP_MS, 120); // 2 hours of sparse data
+
+    // Filter out already-requested timestamps
+    const toFetch = sparseTimestamps.filter(
+      ts => ts >= minTs && !currentState.requestedTimestamps.has(ts)
+    );
+
+    if (DEBUG_POLLING) console.log(`Sparse phase: fetching ${toFetch.length} timestamps`);
+
+    // Fetch in batches with increased concurrency
+    for (let i = 0; i < toFetch.length; i += MAX_IN_FLIGHT) {
+      if (cancelBackfillRef.current || stateRef.current.hasFirstFrame) break;
+
+      const batch = toFetch.slice(i, i + MAX_IN_FLIGHT);
+      await fetchTimestampBatch(batch, backfillAbortControllerRef.current?.signal);
+
+      // Short delay between batches
+      if (i + MAX_IN_FLIGHT < toFetch.length) {
+        await delay(BATCH_DELAY_MS);
+      }
+    }
+  }, [fetchTimestampBatch]);
+
+  /**
+   * Phase 2: Medium density backfill at 30-second intervals
+   */
+  const runMediumBackfill = useCallback(async () => {
+    const currentState = stateRef.current;
+    if (currentState.orderedTimestamps.length === 0) return;
+
+    const gaps = detectGaps(currentState.orderedTimestamps, DENSE_STEP_MS);
+
+    // Generate 30-second interval timestamps for larger gaps
+    const mediumTimestamps: number[] = [];
+    for (const gap of gaps) {
+      if (gap.missingCount > 3) {
+        // Add 30-second samples within the gap
+        let ts = gap.start + MEDIUM_STEP_MS;
+        while (ts < gap.end) {
+          if (!currentState.requestedTimestamps.has(ts)) {
+            mediumTimestamps.push(ts);
+          }
+          ts += MEDIUM_STEP_MS;
+        }
+      }
+    }
+
+    if (DEBUG_POLLING) console.log(`Medium phase: fetching ${mediumTimestamps.length} timestamps`);
+
+    // Fetch in batches
+    for (let i = 0; i < mediumTimestamps.length; i += MAX_IN_FLIGHT) {
+      if (cancelBackfillRef.current || stateRef.current.hasFirstFrame) break;
+
+      const batch = mediumTimestamps.slice(i, i + MAX_IN_FLIGHT);
+      await fetchTimestampBatch(batch, backfillAbortControllerRef.current?.signal);
+
+      if (i + MAX_IN_FLIGHT < mediumTimestamps.length) {
+        await delay(BATCH_DELAY_MS);
+      }
+    }
+  }, [fetchTimestampBatch]);
+
+  /**
+   * Phase 3: Dense backfill at 10-second intervals with gap detection
+   */
+  const runDenseBackfill = useCallback(async () => {
+    while (!stateRef.current.hasFirstFrame && !cancelBackfillRef.current && isMountedRef.current) {
+      const currentState = stateRef.current;
+      if (currentState.orderedTimestamps.length === 0) break;
+
+      const gaps = detectGaps(currentState.orderedTimestamps, DENSE_STEP_MS);
+
+      if (gaps.length === 0) {
+        // No gaps - try extending backward to find earlier frames
+        const earliestTs = currentState.orderedTimestamps[0];
+        const toFetch: number[] = [];
+
+        for (let i = 1; i <= BACKFILL_CONCURRENCY; i++) {
+          const ts = earliestTs - (DENSE_STEP_MS * i);
+          if (!currentState.requestedTimestamps.has(ts)) {
+            toFetch.push(ts);
+          }
+        }
+
+        if (toFetch.length === 0) {
+          markHasFirstFrame();
+          break;
+        }
+
+        const { hadAnyData } = await fetchTimestampBatch(toFetch, backfillAbortControllerRef.current?.signal);
+        if (!hadAnyData) {
+          // No data returned - we've reached the beginning
+          markHasFirstFrame();
+          break;
+        }
+      } else {
+        // Fill gaps, prioritizing earlier gaps first
+        gaps.sort((a, b) => a.start - b.start);
+
+        const toFetch: number[] = [];
+        for (const gap of gaps.slice(0, 3)) {
+          const gapTimestamps = generateGapFillTimestamps(gap.start, gap.end, DENSE_STEP_MS);
+          for (const ts of gapTimestamps) {
+            if (!currentState.requestedTimestamps.has(ts)) {
+              toFetch.push(ts);
+            }
+            if (toFetch.length >= MAX_IN_FLIGHT) break;
+          }
+          if (toFetch.length >= MAX_IN_FLIGHT) break;
+        }
+
+        if (toFetch.length === 0) {
+          markHasFirstFrame();
+          break;
+        }
+
+        await fetchTimestampBatch(toFetch, backfillAbortControllerRef.current?.signal);
+      }
+
+      // Ensure scheduler continues running during backfill
+      if (stateRef.current.orderedTimestamps.length > 0 &&
+          stateRef.current.playbackPointer === null &&
+          !stateRef.current.isLivePaused &&
+          schedulerTimerRef.current === null) {
+        startScheduler();
+      }
+
+      await delay(BATCH_DELAY_MS);
+    }
+  }, [fetchTimestampBatch, markHasFirstFrame, startScheduler]);
+
+  /**
+   * Multi-phase backfill strategy:
+   * 1. Sparse phase (60s intervals) - quick timeline coverage
+   * 2. Medium phase (30s intervals) - fill larger gaps
+   * 3. Dense phase (10s intervals) - full resolution with gap detection
+   */
   const runBackfill = useCallback(async () => {
     if (!gameId) return;
     if (backfillRunningRef.current) return;
 
     backfillRunningRef.current = true;
     cancelBackfillRef.current = false;
-    // Create a controller to allow cancelling all in-flight backfill requests
     backfillAbortControllerRef.current = new AbortController();
 
-    setFrameState((prev) =>
-      prev.isBackfilling ? prev : { ...prev, isBackfilling: true }
-    );
+    setFrameState(prev => ({
+      ...prev,
+      isBackfilling: true,
+      backfillPhase: 'sparse'
+    }));
 
     try {
-      while (isMountedRef.current && !cancelBackfillRef.current) {
-        const currentState = stateRef.current;
-        if (currentState.hasFirstFrame) {
-          break;
-        }
-        if (currentState.orderedTimestamps.length === 0) {
-          break;
-        }
+      // === PHASE 1: Sparse sampling at 60-second intervals ===
+      if (DEBUG_POLLING) console.log('Backfill Phase 1: Sparse sampling');
+      await runSparseBackfill();
 
-        // Initialize cursor if needed
-        if (backfillCursorRef.current === null) {
-          const anchorTs = currentState.orderedTimestamps[0];
-          if (anchorTs === undefined) {
-            break;
-          }
-          const roundedAnchor = roundToPrevious10s(new Date(anchorTs)).getTime();
-          backfillCursorRef.current = roundedAnchor - BACKFILL_STEP_MS;
-        }
-
-        // Determine the timestamps to fetch based on concurrency, always stepping further back in time
-        const targetTimestamps: number[] = [];
-        const currentCursor = backfillCursorRef.current ?? 0;
-        
-        for (let i = 0; i < BACKFILL_CONCURRENCY; i++) {
-          const targetCursor = currentCursor - (BACKFILL_STEP_MS * i);
-          if (!Number.isFinite(targetCursor)) {
-            break;
-          }
-          targetTimestamps.push(targetCursor);
-        }
-
-        if (targetTimestamps.length === 0) {
-          markHasFirstFrame();
-          break;
-        }
-
-        // Create fetch promises with retry logic
-        const fetchPromises = targetTimestamps.map(async (targetCursor) => {
-          const targetTime = toISO(new Date(targetCursor));
-          let retryCount = 0;
-          const maxRetries = 3;
-
-          while (retryCount <= maxRetries) {
-            // Check if we should abort before making the request
-            if (cancelBackfillRef.current || backfillAbortControllerRef.current?.signal.aborted) {
-              throw new Error('Backfill cancelled');
-            }
-
-            try {
-              const chunk = await fetchChunk(targetTime, backfillAbortControllerRef.current?.signal);
-              return { chunk, targetCursor };
-            } catch (error) {
-              retryCount++;
-              if (retryCount > maxRetries || cancelBackfillRef.current) {
-                // Log the error but don't fail the entire batch
-                if (DEBUG_POLLING) {
-                  console.warn(`Backfill chunk failed after ${maxRetries} retries:`, error);
-                }
-                return null;
-              }
-              
-              // Exponential backoff with jitter
-              const baseDelay = BACKFILL_RETRY_DELAY_MS;
-              const exponentialDelay = baseDelay * Math.pow(2, retryCount - 1);
-              const jitter = Math.random() * 100; // Add up to 100ms jitter
-              await delay(exponentialDelay + jitter);
-            }
-          }
-          
-          return null;
-        });
-
-        // Wait for all fetches to complete (or fail)
-        const results = await Promise.allSettled(fetchPromises);
-        
-        // Process successful results
-        let anyProgress = false;
-        let sawFrames = false;
-        let earliestFetchedTimestamp = Number.POSITIVE_INFINITY;
-        
-        for (const result of results) {
-          if (result.status === 'fulfilled' && result.value !== null) {
-            const { chunk, targetCursor } = result.value;
-            const { windowFrames, detailFrames, metadata } = chunk;
-            
-            if (windowFrames.length > 0 || detailFrames.length > 0) {
-              sawFrames = true;
-              const mergeResult = mergeFrames(windowFrames, detailFrames, metadata);
-              if (mergeResult.changed) {
-                anyProgress = true;
-              }
-              if (targetCursor < earliestFetchedTimestamp) {
-                earliestFetchedTimestamp = targetCursor;
-              }
-            }
-          }
-        }
-        
-        if (anyProgress) {
-          const updatedEarliest = stateRef.current.orderedTimestamps[0];
-          if (updatedEarliest === undefined) {
-            markHasFirstFrame();
-            break;
-          }
-          const rounded = roundToPrevious10s(new Date(updatedEarliest)).getTime();
-          backfillCursorRef.current = rounded - BACKFILL_STEP_MS;
-        } else {
-          if (!sawFrames) {
-            // All requests returned empty/204 – we've reached the beginning
-            markHasFirstFrame();
-            break;
-          }
-
-          const fallbackCursor = Number.isFinite(earliestFetchedTimestamp)
-            ? earliestFetchedTimestamp - BACKFILL_STEP_MS
-            : (() => {
-                const updatedEarliest = stateRef.current.orderedTimestamps[0];
-                return updatedEarliest !== undefined
-                  ? roundToPrevious10s(new Date(updatedEarliest)).getTime() - BACKFILL_STEP_MS
-                  : Number.NaN;
-              })();
-
-          if (!Number.isFinite(fallbackCursor)) {
-            markHasFirstFrame();
-            break;
-          }
-
-          backfillCursorRef.current = fallbackCursor;
-        }
-        
-        // Ensure scheduler continues running during backfill if we're in live mode
-        if (stateRef.current.orderedTimestamps.length > 0 &&
-            stateRef.current.playbackPointer === null &&
-            !stateRef.current.isLivePaused &&
-            schedulerTimerRef.current === null) {
-          startScheduler();
-        }
-        
-        // Add jitter between batches to avoid overwhelming the API
-        if (targetTimestamps.length === BACKFILL_CONCURRENCY) {
-          await delay(BACKFILL_DELAY_MS + (Math.random() * BACKFILL_BATCH_JITTER_MS));
-        } else {
-          await delay(BACKFILL_DELAY_MS);
-        }
+      if (cancelBackfillRef.current || stateRef.current.hasFirstFrame) {
+        return;
       }
+
+      // === PHASE 2: Medium density at 30-second intervals ===
+      if (DEBUG_POLLING) console.log('Backfill Phase 2: Medium density');
+      setFrameState(prev => ({ ...prev, backfillPhase: 'medium' }));
+      await runMediumBackfill();
+
+      if (cancelBackfillRef.current || stateRef.current.hasFirstFrame) {
+        return;
+      }
+
+      // === PHASE 3: Dense fill with gap detection ===
+      if (DEBUG_POLLING) console.log('Backfill Phase 3: Dense fill');
+      setFrameState(prev => ({ ...prev, backfillPhase: 'dense' }));
+      await runDenseBackfill();
+
     } finally {
       backfillRunningRef.current = false;
       backfillStartedRef.current = stateRef.current.hasFirstFrame;
       backfillAbortControllerRef.current = null;
-      setFrameState((prev) =>
-        prev.isBackfilling ? { ...prev, isBackfilling: false } : prev
-      );
-      
-      // Ensure scheduler is running after backfill completes if we're in live mode
+      setFrameState(prev => ({
+        ...prev,
+        isBackfilling: false,
+        backfillPhase: prev.hasFirstFrame ? 'complete' : prev.backfillPhase
+      }));
+
+      // Ensure scheduler is running after backfill
       if (stateRef.current.orderedTimestamps.length > 0 &&
           stateRef.current.playbackPointer === null &&
           !stateRef.current.isLivePaused &&
@@ -893,7 +1028,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         startScheduler();
       }
     }
-  }, [fetchChunk, gameId, markHasFirstFrame, mergeFrames, setFrameState, startScheduler]);
+  }, [gameId, runSparseBackfill, runMediumBackfill, runDenseBackfill, setFrameState, startScheduler]);
 
 
   const startLivePolling = useCallback(() => {
@@ -919,6 +1054,44 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
         pollIntervalRef.current = null;
       }
       pollIntervalRef.current = setTimeout(poll, delayMs);
+    };
+
+    const handleTerminalState = () => {
+      setFrameState(prev => ({ ...prev, isFinal: true }));
+
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        clearTimeout(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+
+      if (finalStateBackoffRef.current) {
+        clearTimeout(finalStateBackoffRef.current);
+      }
+
+      // Use exponential backoff based on consecutive empty responses
+      const backoffMultiplier = Math.min(stateRef.current.consecutiveEmptyResponses, 5);
+      const backoffMs = FINAL_STATE_BACKOFF_MS * Math.max(1, backoffMultiplier);
+
+      finalStateBackoffRef.current = setTimeout(() => {
+        if (!isMountedRef.current || cancelBackfillRef.current) {
+          return;
+        }
+        if (DEBUG_POLLING) {
+          console.log('Terminal state backoff expired - resuming polling');
+        }
+        // Reset detection state and resume polling
+        setFrameState(prev => ({
+          ...prev,
+          isFinal: false,
+          consecutiveEmptyResponses: 0,
+          duplicateFrameCount: 0,
+          lastFrameSignature: null
+        }));
+        startLivePolling();
+      }, backoffMs);
+
+      pollingInFlightRef.current = false;
     };
 
     const poll = async () => {
@@ -1028,8 +1201,54 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
           getISODateMultiplyOf10(),
           forwardAbortControllerRef.current.signal
         );
+
+        // Track empty responses for terminal detection
+        if (windowFrames.length === 0 && detailFrames.length === 0) {
+          const newEmptyCount = stateRef.current.consecutiveEmptyResponses + 1;
+          setFrameState(prev => ({ ...prev, consecutiveEmptyResponses: newEmptyCount }));
+
+          if (newEmptyCount >= EMPTY_RESPONSE_THRESHOLD) {
+            if (DEBUG_POLLING) {
+              console.log(`Detected ${newEmptyCount} consecutive empty responses - stopping polling`);
+            }
+            handleTerminalState();
+            return;
+          }
+        } else {
+          // Reset empty response counter when we get data
+          if (stateRef.current.consecutiveEmptyResponses > 0) {
+            setFrameState(prev => ({ ...prev, consecutiveEmptyResponses: 0 }));
+          }
+        }
+
+        // Check for duplicate frames (game stagnation detection)
+        if (windowFrames.length > 0) {
+          const latestFrame = windowFrames[windowFrames.length - 1];
+          const signature = computeFrameSignature(latestFrame);
+
+          if (signature === stateRef.current.lastFrameSignature && signature !== '') {
+            const newDuplicateCount = stateRef.current.duplicateFrameCount + 1;
+            setFrameState(prev => ({ ...prev, duplicateFrameCount: newDuplicateCount }));
+
+            if (newDuplicateCount >= DUPLICATE_THRESHOLD) {
+              if (DEBUG_POLLING) {
+                console.log(`Detected ${newDuplicateCount} consecutive duplicate frames - stopping polling`);
+              }
+              handleTerminalState();
+              return;
+            }
+          } else {
+            // Reset duplicate counter when frame changes
+            if (stateRef.current.duplicateFrameCount > 0) {
+              setFrameState(prev => ({ ...prev, duplicateFrameCount: 0 }));
+            }
+            // Update signature
+            setFrameState(prev => ({ ...prev, lastFrameSignature: signature }));
+          }
+        }
+
         mergeFrames(windowFrames, detailFrames, metadata);
-        
+
         // Start scheduler if we have frames and we're in live mode
         // Continue running even during backfill
         if (stateRef.current.orderedTimestamps.length > 0 &&
@@ -1038,7 +1257,30 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
             schedulerTimerRef.current === null) {
           startScheduler();
         }
-        
+
+        // Periodically check for and fill small gaps (fire-and-forget)
+        if (stateRef.current.orderedTimestamps.length > 0 &&
+            !stateRef.current.isBackfilling &&
+            stateRef.current.orderedTimestamps.length < 500) { // Only if not too many frames
+          const gaps = detectGaps(stateRef.current.orderedTimestamps, DENSE_STEP_MS);
+          const smallGaps = gaps.filter(g => g.missingCount <= 5 && g.missingCount > 0);
+
+          if (smallGaps.length > 0) {
+            const toFill = smallGaps
+              .slice(0, 2) // Only process first 2 gaps per poll
+              .flatMap(g => generateGapFillTimestamps(g.start, g.end, DENSE_STEP_MS))
+              .filter(ts => !stateRef.current.requestedTimestamps.has(ts))
+              .slice(0, 10); // Limit to 10 timestamps per poll
+
+            if (toFill.length > 0) {
+              // Fire-and-forget gap fill - don't await
+              fetchTimestampBatch(toFill, backfillAbortControllerRef.current?.signal).catch(() => {
+                // Silently ignore gap fill errors
+              });
+            }
+          }
+        }
+
         // If after merging frames we detect a terminal state, stop polling
         if (stateRef.current.isFinal && pollIntervalRef.current) {
           if (DEBUG_POLLING) {
@@ -1063,7 +1305,7 @@ export function useFrameIndex(gameId: string): FrameIndexReturn {
     };
 
     void poll();
-  }, [fetchChunk, gameId, mergeFrames, setFrameState, startScheduler]);
+  }, [fetchChunk, fetchTimestampBatch, gameId, mergeFrames, setFrameState, startScheduler]);
 
   // Ensure backfill starts whenever conditions allow, even if forward polling is stopped.
   // Do not flip hasFirstFrame here; only start if we haven't reached the earliest frame.
